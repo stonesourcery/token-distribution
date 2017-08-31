@@ -1,13 +1,15 @@
 pragma solidity ^0.4.13;
 
-contract Ownable {
+contract Ownable
+{
   address public owner;
 
   /**
    * @dev The Ownable constructor sets the original `owner` of the contract to the sender
    * account.
    */
-  function Ownable() {
+  function Ownable()
+  {
     owner = msg.sender;
   }
 
@@ -15,7 +17,8 @@ contract Ownable {
   /**
    * @dev Throws if called by any account other than the owner.
    */
-  modifier onlyOwner() {
+  modifier onlyOwner()
+  {
     require(msg.sender == owner);
     _;
   }
@@ -33,7 +36,8 @@ contract Ownable {
 
 }
 
-contract Pausable is Ownable {
+contract Pausable is Ownable
+{
   event Pause();
   event Unpause();
 
@@ -41,17 +45,19 @@ contract Pausable is Ownable {
 
 
   /**
-   * @dev modifier to allow actions only when the contract IS paused
+   * @dev modifier to allow actions only when the contract IS NOT paused
    */
-  modifier whenNotPaused() {
+  modifier whenNotPaused()
+  {
     require(!paused);
     _;
   }
 
   /**
-   * @dev modifier to allow actions only when the contract IS NOT paused
+   * @dev modifier to allow actions only when the contract IS paused
    */
-  modifier whenPaused {
+  modifier whenPaused
+  {
     require(paused);
     _;
   }
@@ -59,7 +65,8 @@ contract Pausable is Ownable {
   /**
    * @dev called by the owner to pause, triggers stopped state
    */
-  function pause() onlyOwner whenNotPaused returns (bool) {
+  function pause() onlyOwner whenNotPaused returns (bool)
+  {
     paused = true;
     Pause();
     return true;
@@ -68,7 +75,8 @@ contract Pausable is Ownable {
   /**
    * @dev called by the owner to unpause, returns to normal state
    */
-  function unpause() onlyOwner whenPaused returns (bool) {
+  function unpause() onlyOwner whenPaused returns (bool)
+  {
     paused = false;
     Unpause();
     return true;
