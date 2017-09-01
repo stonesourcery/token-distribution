@@ -74,7 +74,7 @@ contract Quantstamp is StandardToken, Ownable, Pausable
         amountRaised += amount;
 
         // Transfer tokens to sender
-        uint tokenAmount = PricingStrategy.getTokenAmount(pricingStrategy, amount);
+        uint tokenAmount = PricingStrategy.getTokenBonusAmount(pricingStrategy, amount);
         tokenReward.transfer(msg.sender, tokenAmount);
         FundTransfer(msg.sender, amount, true);
 
