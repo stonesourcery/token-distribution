@@ -1,13 +1,14 @@
 pragma solidity ^0.4.13;
 
 import "./StandardToken.sol"
+import "./PricingStrategy.sol"
 
 /**
  * A crowdsale contract for Quantstamp
  */
 contract Quantstamp is StandardToken, Ownable, Pausable
 {
-    // After the deadline, the funds will be sent to the beneficiary
+    // Funds will be sent to the beneficiary
     address public beneficiary;
 
     // Parameters of the crowdsale
@@ -15,7 +16,7 @@ contract Quantstamp is StandardToken, Ownable, Pausable
     uint public fundingCap;
     uint public amountRaised;
     uint public deadline;
-    uint public price;
+    PricingStrategyInfo public pricingStrategy;
 
     // The token reward
     StandardToken public tokenReward;
@@ -31,6 +32,12 @@ contract Quantstamp is StandardToken, Ownable, Pausable
     event CapReached(address beneficiary, uint amountRaised);
     event FundTransfer(address backer, uint amount, bool isContribution);
 
+    // Modifiers
+    modifier fundGoalReached() { if (fundingGoalReached) _; }
+    modifier crowdSaleNotClosed() { if (!crowdsaleClosed && now <= deadline) _; }
+    modifier crowdsaleClosed() { if (crowdsaleClosed || now > deadline) _; }
+
+
     /**
      * Initializes the crowdsale with the specified parameters.
      */
@@ -39,35 +46,25 @@ contract Quantstamp is StandardToken, Ownable, Pausable
         uint fundingGoalInEthers,
         uint fundingCapInEthers,
         uint durationInMinutes,
-        uint etherCostOfEachToken,
+        PricingStrategy strategy,
         token addressOfTokenUsedAsReward)
     {
         beneficiary = ifSuccessfulSendTo;
         fundingGoal = fundingGoalInEthers * 1 ether;
         fundingCap = fundingCapInEthers * 1 ether;
         deadline = now + durationInMinutes * 1 minutes;
-        price = etherCostOfEachToken * 1 ether;
+        pricingStrategy = strategy;
         tokenReward = token(addressOfTokenUsedAsReward);
     }
 
     /**
-     * @dev Modifier to allow actions only when the contract passed the deadline
+     * This default function is called whenever anyone sends funds to a contract.
      */
-    modifier afterDeadline()
+    function () payable whenNotPaused crowdSaleNotClosed
     {
-        if (now >= deadline || crowdsaleClosed) _;
-    }
+        uint amount = msg.value;
 
-    /**
-     * This default function is called whenever anyone sends
-     * funds to a contract.
-     */
-    function () payable whenNotPaused
-    {
-        require (!crowdsaleClosed);
-        uint amount += msg.value;
-
-        // Ensure that amout raised cannot exceed cap
+        // Ensure that amount raised cannot exceed cap
         if (amountRaised.plus(amount) > fundingCap)
         {
             amount = fundingCap.minus(amountRaised);
@@ -75,10 +72,16 @@ contract Quantstamp is StandardToken, Ownable, Pausable
 
         balanceOf[msg.sender] += amount;
         amountRaised += amount;
-        tokenReward.transfer(msg.sender, amount / price);
+
+        // Transfer tokens to sender
+        uint tokenAmount = PricingStrategy.getTokenAmount(pricingStrategy, amount);
+        tokenReward.transfer(msg.sender, tokenAmount);
         FundTransfer(msg.sender, amount, true);
 
-        // Check if cap was reached. If so, end the crowdsale.
+        // Has the funding goal been reached?
+        fundingGoalReached = amountRaised >= fundingGoal;
+
+        // Has the funding cap been reached? If so, end the crowdsale.
         if (amountRaised >= fundingCap)
         {
             fundingCapReached = true;
@@ -88,24 +91,51 @@ contract Quantstamp is StandardToken, Ownable, Pausable
     }
 
     /**
-     * @dev Checks if the goal or time limit has been reached and ends the campaign
+     * @dev Checks if the goal has been reached
      */
-    function checkGoalReached() afterDeadline
+    function checkGoalReached() constant returns(bool)
     {
-        if (amountRaised >= fundingGoal)
-        {
-            fundingGoalReached = true;
-            GoalReached(beneficiary, amountRaised);
-        }
-        crowdsaleClosed = true;
+        return fundingGoalReached;
     }
 
     /**
-     * If the deadline has been reached, this function sends the funds
-     * to the beneficiary. This function needs to be explicitly called
-     * after the deadline has been reached.
+     * @dev Returns the amount raised
      */
-    function safeWithdrawal() afterDeadline
+    function getAmountRaised() constant returns(uint)
+    {
+        return amountRaised;
+    }
+
+    /**
+     * Allows the owner to withdraw funds if and only if
+     * the funding goal has been reached.
+     */
+    function ownerWithdrawal(uint value) onlyOwner fundGoalReached
+    {
+        if (balanceOf[msg.sender] >= value) {
+            if (beneficiary.send(value))
+            {
+                balanceOf[msg.sender] -= value;
+                FundTransfer(beneficiary, value, false);
+            }
+        }
+    }
+
+    /**
+     * Allows the owner to withdraw all funds if and only if
+     * the funding goal has been reached.
+     */
+    function ownerWithdrawalAll() onlyOwner fundGoalReached
+    {
+        ownerWithdrawal(balanceOf[msg.sender]);
+    }
+
+    /**
+     * Allows funders to withdrawal committed funds after the crowdsale
+     * is closed. A withdrawal can only be done if the minimum funding
+     * goal was NOT reached.
+     */
+    function safeWithdrawal() crowdsaleClosed
     {
         if (!fundingGoalReached)
         {
@@ -120,27 +150,22 @@ contract Quantstamp is StandardToken, Ownable, Pausable
                 }
             }
         }
-
-        if (fundingGoalReached && beneficiary == msg.sender)
-        {
-            // Send the funds to the beneficiary
-            if (beneficiary.send(amountRaised))
-            {
-                FundTransfer(beneficiary, amountRaised, false);
-            }
-            else
-            {
-                // Funders' balances unlocked if fail to send to beneficiary
-                fundingGoalReached = false;
-            }
-        }
     }
 
     /**
-     * Permits the owner to distribute tokens to a specified address.
+     * Permits the owner to distribute available tokens to a specified address.
      */
     function distributeTokens(address to, uint value) onlyOwner
     {
         tokenReward.transfer(to, value);
+    }
+
+
+    /**
+     * Permits the owner to change the pricing strategy
+     */
+    function updatePricingStrategy(PricingStrategyInfo strategy) onlyOwner
+    {
+        pricingStrategy = strategy;
     }
 }
