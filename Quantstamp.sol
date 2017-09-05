@@ -92,21 +92,6 @@ contract Quantstamp is StandardToken, Ownable, Pausable
         }
     }
 
-    /**
-     * @dev Checks if the goal has been reached
-     */
-    function checkGoalReached() external constant returns(bool)
-    {
-        return fundingGoalReached;
-    }
-
-    /**
-     * @dev Returns the amount raised
-     */
-    function getAmountRaised() external constant returns(uint)
-    {
-        return amountRaised;
-    }
 
     /**
      * Allows the owner to withdraw funds if and only if
