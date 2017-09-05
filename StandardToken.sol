@@ -27,6 +27,9 @@ contract StandardToken
       decimals = decimalUnits;
       tokenSupply = initialSupply;
       token.init(totalSupply);
+
+      // conv rate and supply for each stage
+      // when min goal reached, can withdraw
    }
 
    function totalSupply() constant returns (uint)
@@ -59,6 +62,4 @@ contract StandardToken
     return token.approve(spender, value);
   }
 
-   event Transfer(address indexed from, address indexed to, uint value);
-   event Approval(address indexed owner, address indexed spender, uint value);
  }

@@ -20,6 +20,8 @@ contract Quantstamp is StandardToken, Ownable, Pausable
 
     // The token reward
     StandardToken public tokenReward;
+
+    // Map of funders to contribution amount
     mapping(address => uint256) public balanceOf;
 
     // Crowdsale status
@@ -93,7 +95,7 @@ contract Quantstamp is StandardToken, Ownable, Pausable
     /**
      * @dev Checks if the goal has been reached
      */
-    function checkGoalReached() constant returns(bool)
+    function checkGoalReached() external constant returns(bool)
     {
         return fundingGoalReached;
     }
@@ -101,7 +103,7 @@ contract Quantstamp is StandardToken, Ownable, Pausable
     /**
      * @dev Returns the amount raised
      */
-    function getAmountRaised() constant returns(uint)
+    function getAmountRaised() external constant returns(uint)
     {
         return amountRaised;
     }
@@ -110,7 +112,7 @@ contract Quantstamp is StandardToken, Ownable, Pausable
      * Allows the owner to withdraw funds if and only if
      * the funding goal has been reached.
      */
-    function ownerWithdrawal(uint value) onlyOwner fundGoalReached
+    function ownerWithdrawal(uint value) external onlyOwner fundGoalReached
     {
         if (balanceOf[msg.sender] >= value) {
             if (beneficiary.send(value))
@@ -125,7 +127,7 @@ contract Quantstamp is StandardToken, Ownable, Pausable
      * Allows the owner to withdraw all funds if and only if
      * the funding goal has been reached.
      */
-    function ownerWithdrawalAll() onlyOwner fundGoalReached
+    function ownerWithdrawalAll() external onlyOwner fundGoalReached
     {
         ownerWithdrawal(balanceOf[msg.sender]);
     }
@@ -135,7 +137,7 @@ contract Quantstamp is StandardToken, Ownable, Pausable
      * is closed. A withdrawal can only be done if the minimum funding
      * goal was NOT reached.
      */
-    function safeWithdrawal() crowdsaleClosed
+    function safeWithdrawal() external crowdsaleClosed
     {
         if (!fundingGoalReached)
         {
@@ -155,7 +157,7 @@ contract Quantstamp is StandardToken, Ownable, Pausable
     /**
      * Permits the owner to distribute available tokens to a specified address.
      */
-    function distributeTokens(address to, uint value) onlyOwner
+    function distributeTokens(address to, uint value) public onlyOwner
     {
         tokenReward.transfer(to, value);
     }
@@ -164,7 +166,7 @@ contract Quantstamp is StandardToken, Ownable, Pausable
     /**
      * Permits the owner to change the pricing strategy
      */
-    function updatePricingStrategy(PricingStrategyInfo strategy) onlyOwner
+    function updatePricingStrategy(PricingStrategyInfo strategy) external onlyOwner
     {
         pricingStrategy = strategy;
     }
