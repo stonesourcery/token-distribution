@@ -36,6 +36,14 @@ contract Ownable
 
 }
 
+/**
+ * A contract that inherits this attribute is said to be pausable. There is a state
+ * variable that indicates whether or not the contract is paused.
+ *
+ * This contract specifies modifiers and functions that may be used by the contract
+ * for pausing and unpausing, and for preventing/enabling the execution of functions
+ * depending on the value of the pause state variable.
+ */
 contract Pausable is Ownable
 {
   event Pause();
