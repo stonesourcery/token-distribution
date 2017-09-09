@@ -53,7 +53,7 @@ contract Pausable is Ownable
 
 
   /**
-   * @dev modifier to allow actions only when the contract IS NOT paused
+   * A modifier that allows actions only when the contract IS NOT paused
    */
   modifier whenNotPaused()
   {
@@ -62,7 +62,7 @@ contract Pausable is Ownable
   }
 
   /**
-   * @dev modifier to allow actions only when the contract IS paused
+   * A modifier that allows actions only when the contract IS paused
    */
   modifier whenPaused
   {
@@ -71,7 +71,7 @@ contract Pausable is Ownable
   }
 
   /**
-   * @dev called by the owner to pause, triggers stopped state
+   * Called by the owner to pause, triggers stopped state
    */
   function pause() onlyOwner whenNotPaused returns (bool)
   {
@@ -81,7 +81,7 @@ contract Pausable is Ownable
   }
 
   /**
-   * @dev called by the owner to unpause, returns to normal state
+   * Called by the owner to unpause, returns to normal state
    */
   function unpause() onlyOwner whenPaused returns (bool)
   {
