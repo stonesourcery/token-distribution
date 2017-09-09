@@ -1,4 +1,7 @@
-library SafeMathLib {
+pragma solidity ^0.4.16;
+
+library SafeMathLib
+{
   function times(uint a, uint b) returns (uint)
   {
     uint c = a * b;
@@ -19,8 +22,8 @@ library SafeMathLib {
     return c;
   }
 
-  function assert(bool assertion) private
+  /*function assert(bool assertion) private
   {
-    if (!assertion) throw;
-  }
+    if (!assertion) revert();
+  }*/
 }

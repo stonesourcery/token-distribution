@@ -1,7 +1,7 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.16;
 
 import './ERC20Lib.sol';
-import "./Security.sol"
+import "./Security.sol";
 
 contract StandardToken
 {
@@ -17,16 +17,16 @@ contract StandardToken
    uint public tokenSupply;
 
    function StandardToken(
-      string public tokenName,
-      string public tokenSymbol,
-      uint8 public decimalUnits,
-      uint256 public initialSupply)
+      string tokenName,
+      string tokenSymbol,
+      uint8 decimalUnits,
+      uint initialSupply)
     {
       name = tokenName;
       symbol = tokenSymbol;
       decimals = decimalUnits;
       tokenSupply = initialSupply;
-      token.init(totalSupply);
+      token.init(tokenSupply);
    }
 
    function totalSupply() constant returns (uint)

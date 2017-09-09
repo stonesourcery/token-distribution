@@ -1,4 +1,6 @@
-import "../SafeMathLib.sol";
+pragma solidity ^0.4.16;
+
+import "./SafeMathLib.sol";
 
 /**
  * A library for an ERC20-compatible token that uses a token storage
