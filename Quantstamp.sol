@@ -37,6 +37,8 @@ contract Quantstamp is StandardToken, Ownable, Pausable
     // Modifiers
     modifier fundGoalReached() { if (fundingGoalReached) _; }
     modifier fundGoalNotReached() { if (!fundingGoalReached) _; }
+    modifier fundingCapReached() { if (fundingCapReached) ); }
+    modifier fundingCapNotReached() { if (!fundingCapReached) ); }
     modifier crowdSaleNotClosed() { if (!crowdsaleClosed && now <= deadline) _; }
     modifier crowdsaleClosed() { if (crowdsaleClosed || now > deadline) _; }
 
