@@ -1,6 +1,6 @@
 pragma solidity ^0.4.15;
 
-import './ERC20Lib.sol';
+import "./ERC20Lib.sol";
 import "./Security.sol";
 
 contract StandardToken
@@ -15,6 +15,8 @@ contract StandardToken
    string public symbol;
    uint public decimals;
    uint public tokenSupply;
+
+   bool claimTokens
 
    function StandardToken(
       string tokenName,

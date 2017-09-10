@@ -63,35 +63,39 @@ contract Quantstamp is StandardToken, Ownable, Pausable
         fundingGoal = fundingGoalInEthers * 1 ether;
         fundingCap = fundingCapInEthers * 1 ether;
         deadline = now + durationInMinutes * 1 minutes;
-        PricingStrategy.updatePricingStrategy(pricingInfo, pricingStrategyTierAmounts, pricingStrategyTierBonuses, pricingStrategyTierCount);
         // tokenReward = token(addressOfTokenUsedAsReward);
     }
 
     /**
      * This default function is called whenever anyone sends funds to a contract.
      */
-    function () payable whenNotPaused crowdSaleNotClosed
+    function () payable whenNotPaused fundingCapNotReached crowdSaleNotClosed
     {
+        // The amount received from the sender
         uint amount = msg.value;
 
-        // Ensure that amount raised cannot exceed cap
-        if (amountRaised.plus(amount) > fundingCap)
+        // The actual amount contributed should not cause the cap to be exceeded
+        uint excess = amountRaised.plus(amount).minus(fundingCap);
+        if (excess > 0)
         {
-            amount = fundingCap.minus(amountRaised);
+            amount -= excess;
+            msg.sender.send(excess); // return excess to sender
         }
 
+        // Update balance of sender and amount raised
         balanceOf[msg.sender] += amount;
         amountRaised += amount;
 
         // Transfer tokens to sender
-        uint tokenAmount = PricingStrategy.getTokenBonusAmount(pricingInfo, amount);
+        uint multiplier = 5000; // TODO Pricing strategy
+        uint tokenAmount = (amount * 1 ether).times(multiplier);// PricingStrategy.getTokenReward(pricingStrategy, amount);
         tokenReward.transfer(msg.sender, tokenAmount);
         FundTransfer(msg.sender, amount, true);
 
         // Has the funding goal been reached?
         fundingGoalIsReached = amountRaised >= fundingGoal;
 
-        // Has the funding cap been reached? If so, end the crowdsale.
+        // Has the funding cap been reached? If so, end the crowdsale
         if (amountRaised >= fundingCap)
         {
             fundingCapIsReached = true;
