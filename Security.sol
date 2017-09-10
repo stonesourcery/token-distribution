@@ -1,4 +1,4 @@
-pragma solidity ^0.4.16;
+pragma solidity ^0.4.15;
 
 /**
  * An ownable contract has an owner and the ownership can be transferred.
