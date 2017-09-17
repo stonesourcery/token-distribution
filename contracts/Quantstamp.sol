@@ -70,6 +70,7 @@ contract Quantstamp is Ownable, Pausable
         deadline = now + durationInMinutes * 1 minutes;
         tokenReward = StandardToken(addressOfTokenUsedAsReward);
         TokenAddressEvent(12345, addressOfTokenUsedAsReward);
+        addressToken = addressOfTokenUsedAsReward;
     }
 
     /**
@@ -77,18 +78,67 @@ contract Quantstamp is Ownable, Pausable
      */
     function () payable whenNotPaused fundingCapNotReached crowdSaleNotClosed
     {
+        TokenAddressEvent(msg.value, addressToken);
+
         TokenAddressEvent(987654321, addressToken);
+                uint amount = msg.value;
+
+        // uint excess = amountRaised.plus(amount).minus(fundingCap); // NOTE: this CANNOT be .minus()
+
+        uint amountAfterAddition = amountRaised.plus(amount);
+        TokenAddressEvent(amountAfterAddition, addressToken);
+        if (amountAfterAddition > fundingCap)
+        {
+            uint excess = amountAfterAddition.minus(fundingCap); // NOTE: don't really need .minus() due to if-conditional
+            amount -= excess;
+            msg.sender.transfer(excess); // return excess to sender
+        }
+        TokenAddressEvent(11111, addressToken);
+
+        // Update balance of sender and amount raised
+        balanceOf[msg.sender] += amount;
+        
+        amountRaised += amount;
+
+        // Transfer tokens to sender
+        uint multiplier = 5000; // TODO Pricing strategy
+        // TODO This used to be * 1 ether
+        uint tokenAmount = (amount / (1 ether)).times(multiplier);// PricingStrategy.getTokenReward(pricingStrategy, amount);
+
+        TokenAddressEvent(2222, addressToken);
+        TokenAddressEvent(tokenAmount, addressToken);
+
+        //tokenReward.transfer(msg.sender, tokenAmount);
+        fundingGoalIsReached = amountRaised >= fundingGoal;
+        TokenAddressEvent(3333, addressToken);
+        if (amountRaised >= fundingCap)
+        {
+            fundingCapIsReached = true;
+            CapReached(beneficiary, amountRaised);
+            crowdsaleIsClosed = true;
+        }
+
+        
+    }
+
+    // TODO remove
+    function testSend() payable whenNotPaused fundingCapNotReached crowdSaleNotClosed
+    {
+        
 
         // The amount received from the sender
         uint amount = msg.value;
-        
-        // The actual amount contributed should not cause the cap to be exceeded
+        TokenAddressEvent(msg.value, addressToken);
+// The actual amount contributed should not cause the cap to be exceeded
         uint excess = amountRaised.plus(amount).minus(fundingCap);
+
+
         if (excess > 0)
         {
             amount -= excess;
             msg.sender.transfer(excess); // return excess to sender
         }
+        TokenAddressEvent(11111, addressToken);
 
         // Update balance of sender and amount raised
         balanceOf[msg.sender] += amount;
@@ -100,6 +150,7 @@ contract Quantstamp is Ownable, Pausable
         uint tokenAmount = (amount * 1 ether).times(multiplier);// PricingStrategy.getTokenReward(pricingStrategy, amount);
         tokenReward.transfer(msg.sender, tokenAmount);
         FundTransfer(msg.sender, amount, true);
+        TokenAddressEvent(22222, addressToken);
 
         // Has the funding goal been reached?
         fundingGoalIsReached = amountRaised >= fundingGoal;
@@ -112,6 +163,7 @@ contract Quantstamp is Ownable, Pausable
             crowdsaleIsClosed = true;
         }
     }
+
 
 
     /**

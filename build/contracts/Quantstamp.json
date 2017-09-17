@@ -1,0 +1,470 @@
+{
+  "contract_name": "Quantstamp",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "distributeTokens",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "exceptAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "ownerWithdrawalAll",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "deadline",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "fundingCapIsReached",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "beneficiary",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "unpause",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "crowdsaleIsClosed",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "paused",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "fundingGoalIsReached",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "tokenReward",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "balanceOf",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "fundingGoal",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "amountRaised",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "pause",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "amounts",
+          "type": "uint256[]"
+        },
+        {
+          "name": "rewards",
+          "type": "uint256[]"
+        },
+        {
+          "name": "count",
+          "type": "uint256"
+        }
+      ],
+      "name": "updatePricingStrategy",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "ownerWithdrawal",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "fundingCap",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "safeWithdrawal",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "ifSuccessfulSendTo",
+          "type": "address"
+        },
+        {
+          "name": "fundingGoalInEthers",
+          "type": "uint256"
+        },
+        {
+          "name": "fundingCapInEthers",
+          "type": "uint256"
+        },
+        {
+          "name": "durationInMinutes",
+          "type": "uint256"
+        },
+        {
+          "name": "pricingStrategyTierAmounts",
+          "type": "uint256[]"
+        },
+        {
+          "name": "pricingStrategyTierBonuses",
+          "type": "uint256[]"
+        },
+        {
+          "name": "pricingStrategyTierCount",
+          "type": "uint256"
+        },
+        {
+          "name": "addressOfTokenUsedAsReward",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "type": "constructor"
+    },
+    {
+      "payable": true,
+      "type": "fallback"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "addr",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "GoalReached",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "addr",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "CapReached",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "backer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "isContribution",
+          "type": "bool"
+        }
+      ],
+      "name": "FundTransfer",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [],
+      "name": "Pause",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [],
+      "name": "Unpause",
+      "type": "event"
+    }
+  ],
+  "unlinked_binary": "0x60606040526000805460a060020a60ff0219169055600b805462ffffff19169055341561002b57600080fd5b604051610f5d380380610f5d8339810160405280805191906020018051919060200180519190602001805191906020018051820191906020018051820191906020018051919060200180519150505b5b60008054600160a060020a03191633600160a060020a03161790555b60018054600160a060020a03808b16600160a060020a031992831617909255670de0b6b3a7640000808a02600255880260035542603c88020160055560098054928416929091169190911790555b50505050505050505b610e60806100fd6000396000f300606060405236156100f65763ffffffff60e060020a600035041663158a4988811461043a578063269c11d41461045e57806329dcb0cf146104765780633491450f1461049b57806338af3eed146104c25780633f4ba83a146104f15780634d8db340146105185780635c975abb1461053f5780636b0e2f62146105665780636e66f6e91461058d57806370a08231146105bc5780637a3a0e84146105ed5780637b3e5e7b146106125780638456cb59146106375780638da5cb5b1461065e578063c0dc95311461068d578063dff3f3b9146106bc578063e3b2594f146106d4578063f2fde38b146106f9578063fd6b7ef81461071a575b5b60008054819060a060020a900460ff161561011157600080fd5b600b5462010000900460ff1615801561012c57506005544211155b156104325734915060035460045473__SafeMathLib___________________________6366098d4f90918560006040516020015260405160e060020a63ffffffff85160281526004810192909252602482015260440160206040518083038186803b151561019957600080fd5b6102c65a03f415156101aa57600080fd5b50505060405180519050111561023b5760035473__SafeMathLib___________________________63f4f3bdc1909160045460006040516020015260405160e060020a63ffffffff85160281526004810192909252602482015260440160206040518083038186803b151561021e57600080fd5b6102c65a03f4151561022f57600080fd5b50505060405180519250505b600160a060020a0333166000908152600a6020526040808220805485019055600480548501905573__PricingStrategy_______________________9163c47a9226916006918691516020015260405160e060020a63ffffffff85160281526004810192909252602482015260440160206040518083038186803b15156102c157600080fd5b6102c65a03f415156102d257600080fd5b5050506040518051600954909250600160a060020a0316905063a9059cbb338360006040516020015260405160e060020a63ffffffff8516028152600160a060020a0390921660048301526024820152604401602060405180830381600087803b151561033e57600080fd5b6102c65a03f1151561034f57600080fd5b5050506040518051905050600080516020610e1583398151915233836001604051600160a060020a039093168352602083019190915215156040808301919091526060909101905180910390a1600254600454600b805460ff19169282101592909217909155600354901061043257600b805461ff0019166101001790556001546004547f195de8a1ebf5a1244af169b7e0bd0f735307a2626a73abce88f9b488628c6c2491600160a060020a031690604051600160a060020a03909216825260208201526040908101905180910390a1600b805462ff00001916620100001790555b5b5b5b5b5050005b341561044557600080fd5b61045c600160a060020a036004351660243561072f565b005b341561046957600080fd5b61045c6004356107ca565b005b341561048157600080fd5b610489610921565b60405190815260200160405180910390f35b34156104a657600080fd5b6104ae610927565b604051901515815260200160405180910390f35b34156104cd57600080fd5b6104d5610935565b604051600160a060020a03909116815260200160405180910390f35b34156104fc57600080fd5b6104ae610944565b604051901515815260200160405180910390f35b341561052357600080fd5b6104ae6109cb565b604051901515815260200160405180910390f35b341561054a57600080fd5b6104ae6109da565b604051901515815260200160405180910390f35b341561057157600080fd5b6104ae6109ea565b604051901515815260200160405180910390f35b341561059857600080fd5b6104d56109f3565b604051600160a060020a03909116815260200160405180910390f35b34156105c757600080fd5b610489600160a060020a0360043516610a02565b60405190815260200160405180910390f35b34156105f857600080fd5b610489610a14565b60405190815260200160405180910390f35b341561061d57600080fd5b610489610a1a565b60405190815260200160405180910390f35b341561064257600080fd5b6104ae610a20565b604051901515815260200160405180910390f35b341561066957600080fd5b6104d5610aac565b604051600160a060020a03909116815260200160405180910390f35b341561069857600080fd5b61045c6024600480358281019290820135918135918201910135604435610abb565b005b34156106c757600080fd5b61045c600435610b95565b005b34156106df57600080fd5b610489610cb6565b60405190815260200160405180910390f35b341561070457600080fd5b61045c600160a060020a0360043516610cbc565b005b341561072557600080fd5b61045c610d14565b005b60005433600160a060020a0390811691161461074a57600080fd5b600954600160a060020a031663a9059cbb838360006040516020015260405160e060020a63ffffffff8516028152600160a060020a0390921660048301526024820152604401602060405180830381600087803b15156107a957600080fd5b6102c65a03f115156107ba57600080fd5b505050604051805150505b5b5050565b60008054819033600160a060020a039081169116146107e857600080fd5b600b5460ff161561091857600160a060020a0333166000908152600a602052604090205483111561081857600080fd5b5050600154600160a060020a039081166000818152600a602052604080822054825490941682529081902054849003919082156108fc0290839051600060405180830381858888f19350505050156108d25760008054600160a060020a039081168252600a602052604080832080548590039055600154600080516020610e1583398151915293921691849151600160a060020a039093168352602083019190915215156040808301919091526060909101905180910390a15b60008054600160a060020a03168152600a602052604090205483146108f357fe5b600154600160a060020a03166000908152600a60205260409020548183011461091857fe5b5b5b5b5b505050565b60055481565b600b54610100900460ff1681565b600154600160a060020a031681565b6000805433600160a060020a0390811691161461096057600080fd5b60005460a060020a900460ff16151561097857600080fd5b6000805474ff0000000000000000000000000000000000000000191690557f7805862f689e2f13df9f062ff482ad3ad112aca9e0847911ed832e158c525b3360405160405180910390a15060015b5b5b90565b600b5462010000900460ff1681565b60005460a060020a900460ff1681565b600b5460ff1681565b600954600160a060020a031681565b600a6020526000908152604090205481565b60025481565b60045481565b6000805433600160a060020a03908116911614610a3c57600080fd5b60005460a060020a900460ff1615610a5357600080fd5b6000805474ff0000000000000000000000000000000000000000191660a060020a1790557f6985a02210a168e66602d3235cb6db0e70f92b3ba4d376a33c0f3d9434bff62560405160405180910390a15060015b5b5b90565b600054600160a060020a031681565b60005433600160a060020a03908116911614610ad657600080fd5b73__PricingStrategy_______________________63da92da7f600687878787876040518763ffffffff1660e060020a0281526004018087815260200180602001806020018481526020018381038352888882818152602001925060200280828437909101848103835286815260209081019150879087028082843782019150509850505050505050505060006040518083038186803b1515610b7857600080fd5b6102c65a03f41515610b8957600080fd5b5050505b5b5050505050565b6000805433600160a060020a03908116911614610bb157600080fd5b600b5460ff16156107c557600160a060020a0333166000908152600a602052604090205482901015610be257600080fd5b50600154600160a060020a03166000818152600a60205260409081902054919083156108fc0290849051600060405180830381858888f1935050505015610c8957600160a060020a033381166000908152600a602052604080822080548690039055600154600080516020610e15833981519152931691859151600160a060020a039093168352602083019190915215156040808301919091526060909101905180910390a15b600154600160a060020a03166000908152600a6020526040902054828201146107c557fe5b5b5b5b5b5050565b60035481565b60005433600160a060020a03908116911614610cd757600080fd5b600160a060020a03811615610d0f576000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0383161790555b5b5b50565b600b5460009062010000900460ff1680610d2f575060055442115b15610d0f57600b5460ff161515610d0f5750600160a060020a0333166000908152600a602052604081205490811115610deb57600160a060020a03331681156108fc0282604051600060405180830381858888f1935050505015610deb5733600160a060020a0381166000908152600a6020526040808220829055600080516020610e158339815191529291849151600160a060020a039093168352602083019190915215156040808301919091526060909101905180910390a15b5b600160a060020a0333166000908152600a602052604090205415610d0f57fe5b5b5b5b5b5b505600e842aea7a5f1b01049d752008c53c52890b1a6daf660cf39e8eec506112bbdf6a165627a7a723058200f4b75fe1dcef8efcd3c718837868bdb3b6273bc46ddc257afc6e6dbe466b3ad0029",
+  "networks": {
+    "1505413361242": {
+      "events": {
+        "0xec3f991caf7857d61663fd1bba1739e04abd4781238508cde554bb849d790c85": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "addr",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "GoalReached",
+          "type": "event"
+        },
+        "0x195de8a1ebf5a1244af169b7e0bd0f735307a2626a73abce88f9b488628c6c24": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "addr",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "CapReached",
+          "type": "event"
+        },
+        "0xe842aea7a5f1b01049d752008c53c52890b1a6daf660cf39e8eec506112bbdf6": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "backer",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "name": "isContribution",
+              "type": "bool"
+            }
+          ],
+          "name": "FundTransfer",
+          "type": "event"
+        },
+        "0x6985a02210a168e66602d3235cb6db0e70f92b3ba4d376a33c0f3d9434bff625": {
+          "anonymous": false,
+          "inputs": [],
+          "name": "Pause",
+          "type": "event"
+        },
+        "0x7805862f689e2f13df9f062ff482ad3ad112aca9e0847911ed832e158c525b33": {
+          "anonymous": false,
+          "inputs": [],
+          "name": "Unpause",
+          "type": "event"
+        }
+      },
+      "links": {
+        "SafeMathLib": "0x437333e3682f756409eac7c2f34ecc4afae26b3d",
+        "PricingStrategy": "0x16bd33f5ec8254424087a4f760e2937a6d0496f7"
+      },
+      "address": "0xc1f2d2ff33a99b98ddd5078b6a44536c9a1e9b96",
+      "updated_at": 1505413462133
+    }
+  },
+  "schema_version": "0.0.5",
+  "updated_at": 1505413462133
+}
