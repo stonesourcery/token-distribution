@@ -41,6 +41,9 @@ contract Quantstamp is Ownable, Pausable
     event GoalReached(address addr, uint amount);
     event CapReached(address addr, uint amount);
     event FundTransfer(address backer, uint amount, bool isContribution);
+    event TokenAddressEvent(uint val, address token); // TODO Remove
+
+    address public addressToken; // TODO Remove
 
     // Modifiers
     modifier fundGoalReached() { if (fundingGoalIsReached) _; }
@@ -56,16 +59,17 @@ contract Quantstamp is Ownable, Pausable
      */
     function Quantstamp(
         address ifSuccessfulSendTo,
-        uint fundingGoalInEthers,
+        uint fundingGoalInEthers, 
         uint fundingCapInEthers,
         uint durationInMinutes,
         address addressOfTokenUsedAsReward)
     {
         beneficiary = ifSuccessfulSendTo;
         fundingGoal = fundingGoalInEthers * 1 ether;
-        fundingCap =  fundingCapInEthers * 1 ether;
+        fundingCap =  fundingCapInEthers * 1 ether; 
         deadline = now + durationInMinutes * 1 minutes;
         tokenReward = StandardToken(addressOfTokenUsedAsReward);
+        TokenAddressEvent(12345, addressOfTokenUsedAsReward);
     }
 
     /**
@@ -73,6 +77,8 @@ contract Quantstamp is Ownable, Pausable
      */
     function () payable whenNotPaused fundingCapNotReached crowdSaleNotClosed
     {
+        TokenAddressEvent(987654321, addressToken);
+
         // The amount received from the sender
         uint amount = msg.value;
         
@@ -105,8 +111,6 @@ contract Quantstamp is Ownable, Pausable
             CapReached(beneficiary, amountRaised);
             crowdsaleIsClosed = true;
         }
-
-        
     }
 
 
@@ -118,6 +122,7 @@ contract Quantstamp is Ownable, Pausable
     function setTestValue(uint value) external
     {
         testValue = value;
+        TokenAddressEvent(54321, addressToken);
         ChangedTestValue(testValue, value);
     }
 
