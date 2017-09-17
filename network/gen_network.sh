@@ -5,9 +5,7 @@ accounts_args=""
 
 for i in `cat accounts`
 do
-    echo $i
-    accounts_args="${accounts_args} --account=\"${i}\""
-    
+    accounts_args="${accounts_args} --account=\"${i}\""    
 done
 
 cmd="${prefix} ${accounts_args}"

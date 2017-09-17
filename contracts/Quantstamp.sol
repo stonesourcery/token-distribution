@@ -23,6 +23,9 @@ contract Quantstamp is Ownable, Pausable
     uint public deadline;
     PricingStrategy.PricingStrategyInfo pricingInfo;
 
+    // TODO remove, purely for testing
+    uint public testValue;
+
     // The token reward
     StandardToken public tokenReward;
 
@@ -72,7 +75,7 @@ contract Quantstamp is Ownable, Pausable
     {
         // The amount received from the sender
         uint amount = msg.value;
-
+        
         // The actual amount contributed should not cause the cap to be exceeded
         uint excess = amountRaised.plus(amount).minus(fundingCap);
         if (excess > 0)
@@ -83,6 +86,7 @@ contract Quantstamp is Ownable, Pausable
 
         // Update balance of sender and amount raised
         balanceOf[msg.sender] += amount;
+        
         amountRaised += amount;
 
         // Transfer tokens to sender
@@ -101,6 +105,8 @@ contract Quantstamp is Ownable, Pausable
             CapReached(beneficiary, amountRaised);
             crowdsaleIsClosed = true;
         }
+
+        
     }
 
 
@@ -108,11 +114,11 @@ contract Quantstamp is Ownable, Pausable
     * Test function for setting variables
     * TODO: remove eventually
     */
-    event ChangedGoalReached(uint old_amount, uint updated_amount);
-    function setFundingGoal(uint value) external
+    event ChangedTestValue(uint old_amount, uint updated_amount);
+    function setTestValue(uint value) external
     {
-        ChangedGoalReached(fundingGoal, value);
-        fundingGoal = value;
+        testValue = value;
+        ChangedTestValue(testValue, value);
     }
 
     /**
