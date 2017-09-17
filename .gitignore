@@ -1,4 +1,8 @@
 *~
 \#*
+<<<<<<< HEAD
 build/*
 .idea/
+=======
+build/*
+>>>>>>> d196aafe5abba181ae341abcbad1f9a722294d99
