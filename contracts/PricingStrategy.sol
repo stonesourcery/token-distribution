@@ -5,6 +5,9 @@ import "./SafeMathLib.sol";
 
 library PricingStrategy
 {
+    using SafeMathLib for *;
+
+
     struct PricingStrategyInfo
     {
         uint multiplier; // the amount of tokens per unit of Ether
@@ -15,8 +18,9 @@ library PricingStrategy
      * Returns the number of tokens to be reward based on the supplied
      * pricing strategy and amount of Ether contributed.
      */
-    function getTokenReward(PricingStrategyInfo info, uint amountInEther) returns(uint)
+    function getTokenReward(PricingStrategyInfo storage info, uint amountInEther) returns(uint)
     {
-        return (amountInEther * 1 ether).times(multiplier);
+        return amountInEther.times(info.multiplier);
     }
+
 }
