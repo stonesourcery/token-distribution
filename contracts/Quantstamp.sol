@@ -3,11 +3,13 @@ pragma solidity ^0.4.15;
 import "./StandardToken.sol";
 import "./PricingStrategy.sol";
 import "./SafeMathLib.sol";
+import "./Ownable.sol";
+import "./Pausable.sol";
 
 /**
  * A crowdsale contract for Quantstamp
  */
-contract Quantstamp is Ownable, Pausable // StandardToken
+contract Quantstamp is Ownable, Pausable
 {
     using SafeMathLib for *;
 
@@ -37,7 +39,6 @@ contract Quantstamp is Ownable, Pausable // StandardToken
     event CapReached(address addr, uint amount);
     event FundTransfer(address backer, uint amount, bool isContribution);
 
-
     // Modifiers
     modifier fundGoalReached() { if (fundingGoalIsReached) _; }
     modifier fundGoalNotReached() { if (!fundingGoalIsReached) _; }
@@ -55,46 +56,45 @@ contract Quantstamp is Ownable, Pausable // StandardToken
         uint fundingGoalInEthers,
         uint fundingCapInEthers,
         uint durationInMinutes,
-        uint[] pricingStrategyTierAmounts,
-        uint[] pricingStrategyTierBonuses,
-        uint   pricingStrategyTierCount,
         address addressOfTokenUsedAsReward)
     {
         beneficiary = ifSuccessfulSendTo;
         fundingGoal = fundingGoalInEthers * 1 ether;
-        fundingCap = fundingCapInEthers * 1 ether;
+        fundingCap =  fundingCapInEthers * 1 ether;
         deadline = now + durationInMinutes * 1 minutes;
-        //PricingStrategy.updatePricingStrategy(pricingInfo, pricingStrategyTierAmounts, pricingStrategyTierBonuses, pricingStrategyTierCount);
         tokenReward = StandardToken(addressOfTokenUsedAsReward);
     }
-
-
 
     /**
      * This default function is called whenever anyone sends funds to a contract.
      */
-    function () payable whenNotPaused crowdSaleNotClosed
+    function () payable whenNotPaused fundingCapNotReached crowdSaleNotClosed
     {
+        // The amount received from the sender
         uint amount = msg.value;
 
-        // Ensure that amount raised cannot exceed cap
-        if (amountRaised.plus(amount) > fundingCap)
+        // The actual amount contributed should not cause the cap to be exceeded
+        uint excess = amountRaised.plus(amount).minus(fundingCap);
+        if (excess > 0)
         {
-            amount = fundingCap.minus(amountRaised);
+            amount -= excess;
+            msg.sender.transfer(excess); // return excess to sender
         }
 
+        // Update balance of sender and amount raised
         balanceOf[msg.sender] += amount;
         amountRaised += amount;
 
         // Transfer tokens to sender
-        uint tokenAmount = PricingStrategy.getTokenBonusAmount(pricingInfo, amount);
+        uint multiplier = 5000; // TODO Pricing strategy
+        uint tokenAmount = (amount * 1 ether).times(multiplier);// PricingStrategy.getTokenReward(pricingStrategy, amount);
         tokenReward.transfer(msg.sender, tokenAmount);
         FundTransfer(msg.sender, amount, true);
 
         // Has the funding goal been reached?
         fundingGoalIsReached = amountRaised >= fundingGoal;
 
-        // Has the funding cap been reached? If so, end the crowdsale.
+        // Has the funding cap been reached? If so, end the crowdsale
         if (amountRaised >= fundingCap)
         {
             fundingCapIsReached = true;
@@ -103,6 +103,17 @@ contract Quantstamp is Ownable, Pausable // StandardToken
         }
     }
 
+
+    /**
+    * Test function for setting variables
+    * TODO: remove eventually
+    */
+    event ChangedGoalReached(uint old_amount, uint updated_amount);
+    function setFundingGoal(uint value) external
+    {
+        ChangedGoalReached(fundingGoal, value);
+        fundingGoal = value;
+    }
 
     /**
      * Allows the owner to withdraw funds if and only if the funding goal has
@@ -196,13 +207,5 @@ contract Quantstamp is Ownable, Pausable // StandardToken
         tokenReward.transfer(to, value);
     }
 
-    /**
-    * Permits the owner to change the pricing strategy
-    * TODO: does this have to be external?
-    */
-    function updatePricingStrategy(uint[] amounts, uint[] rewards, uint count) external onlyOwner
-    {
-        PricingStrategy.updatePricingStrategy(pricingInfo, amounts, rewards, count);
-    }
 
 }
