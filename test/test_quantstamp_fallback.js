@@ -116,4 +116,20 @@ contract('Quantstamp', function(accounts) {
       }).then(done).catch(done);
   });
 
+  it("should not accept payment after reaching the cap", function(done) {
+      var amountEther = 3;
+      var amountRaisedAfterTransaction = web3.toWei(20, "ether"); 
+
+      Quantstamp.deployed().then(function(instance) {
+          quantstamp = instance;
+          return quantstamp.sendTransaction({from: user3, value: web3.toWei(amountEther, "ether")});
+      }).then(assert.fail).catch(function(error) {
+          console.log(error.message);
+          return quantstamp.fundingCapIsReached.call();
+      }).then(function(value){
+          console.log("fundingCapIsReached: " + value);
+          assert.equal(value, true, "AmountRaised changed even when paused");
+      }).then(done).catch(done);
+  });
+
 });
