@@ -58,7 +58,7 @@ contract('Quantstamp', function(accounts) {
       }).then(done).catch(done);
   });
 
-  it("should not allow a user to pause the contract", function(done) {
+  it("should not allow a user to unpause the contract", function(done) {
       Quantstamp.deployed().then(function(instance) {
           quantstamp = instance;
           return instance.unpause({from: user1});
@@ -101,5 +101,19 @@ contract('Quantstamp', function(accounts) {
       }).then(done).catch(done);
   });
 
+  it("should send an additional 10 ether to the crowdfunding campaign, exceeding the cap", function(done) {
+      var amountEther = 10;
+      var amountRaisedAfterTransaction = web3.toWei(20, "ether"); 
+
+      Quantstamp.deployed().then(function(instance) {
+          quantstamp = instance;
+          return instance.sendTransaction({from: user2, value: web3.toWei(amountEther, "ether")});
+      }).then(function(){
+          return quantstamp.amountRaised.call();
+      }).then(function(value){
+          console.log("amountRaised: " + value)
+          assert.equal(value, amountRaisedAfterTransaction, "AmountRaised is not equal to the amount transferred");
+      }).then(done).catch(done);
+  });
 
 });
