@@ -77,6 +77,7 @@ contract Quantstamp is Ownable, Pausable
      */
     function () payable whenNotPaused fundingCapNotReached crowdSaleNotClosed
     {
+        // The amount received from the sender
         uint amount = msg.value;
         uint amountAfterAddition = amountRaised.plus(amount);
         if (amountAfterAddition > fundingCap)
