@@ -88,7 +88,7 @@ contract Quantstamp is Ownable, Pausable
         }
 
         // Update balance of sender and amount raised
-        balanceOf[msg.sender] += amount;
+        balanceOf[msg.sender] += amount; // TODO why is this here?
         amountRaised += amount;
         
         // Transfer tokens to sender
@@ -98,8 +98,10 @@ contract Quantstamp is Ownable, Pausable
 
         // TODO: this line breaks things  
         // TODO: test if the same person donates twice, I think our approach is wrong in that case        
-        // tokenReward.transfer(msg.sender, tokenAmount);
-        // FundTransfer(msg.sender, amount, true);
+        tokenReward.transfer(msg.sender, tokenAmount);
+        //tokenReward.transfer(owner, msg.sender, tokenAmount);
+
+        FundTransfer(msg.sender, tokenAmount, true);
         
         // Has the funding goal been reached?
         fundingGoalIsReached = amountRaised >= fundingGoal;
