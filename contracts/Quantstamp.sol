@@ -30,6 +30,7 @@ contract Quantstamp is Ownable, Pausable
     StandardToken public tokenReward;
 
     // Map of funders to contribution amount
+    // TODO: why does this exist? There are balances in ERC20.
     mapping(address => uint) public balanceOf;
 
     // Crowdsale status
@@ -41,9 +42,10 @@ contract Quantstamp is Ownable, Pausable
     event GoalReached(address addr, uint amount);
     event CapReached(address addr, uint amount);
     event FundTransfer(address backer, uint amount, bool isContribution);
-    event TokenAddressEvent(uint val, address token); // TODO Remove
 
-    address public addressToken; // TODO Remove
+    // Testing event
+    event TestUint(uint key, uint val);
+    event TestAddr(uint key, address val);
 
     // Modifiers
     modifier fundGoalReached() { if (fundingGoalIsReached) _; }
@@ -52,7 +54,6 @@ contract Quantstamp is Ownable, Pausable
     modifier fundingCapNotReached() { if (!fundingCapIsReached) _; }
     modifier crowdSaleNotClosed() { if (!crowdsaleIsClosed && now <= deadline) _; }
     modifier crowdsaleClosed() { if (crowdsaleIsClosed || now > deadline) _; }
-
 
     /**
      * Initializes the crowdsale with the specified parameters.
@@ -69,8 +70,6 @@ contract Quantstamp is Ownable, Pausable
         fundingCap =  fundingCapInEthers * 1 ether; 
         deadline = now + durationInMinutes * 1 minutes;
         tokenReward = StandardToken(addressOfTokenUsedAsReward);
-        TokenAddressEvent(12345, addressOfTokenUsedAsReward);
-        addressToken = addressOfTokenUsedAsReward;
     }
 
     /**
@@ -78,80 +77,29 @@ contract Quantstamp is Ownable, Pausable
      */
     function () payable whenNotPaused fundingCapNotReached crowdSaleNotClosed
     {
-        TokenAddressEvent(msg.value, addressToken);
-
-        TokenAddressEvent(987654321, addressToken);
-                uint amount = msg.value;
-
-        // uint excess = amountRaised.plus(amount).minus(fundingCap); // NOTE: this CANNOT be .minus()
-
+        uint amount = msg.value;
         uint amountAfterAddition = amountRaised.plus(amount);
-        TokenAddressEvent(amountAfterAddition, addressToken);
         if (amountAfterAddition > fundingCap)
         {
             uint excess = amountAfterAddition.minus(fundingCap); // NOTE: don't really need .minus() due to if-conditional
             amount -= excess;
             msg.sender.transfer(excess); // return excess to sender
         }
-        TokenAddressEvent(11111, addressToken);
 
         // Update balance of sender and amount raised
         balanceOf[msg.sender] += amount;
-        
         amountRaised += amount;
-
+        
         // Transfer tokens to sender
         uint multiplier = 5000; // TODO Pricing strategy
         // TODO This used to be * 1 ether
-        uint tokenAmount = (amount / (1 ether)).times(multiplier);// PricingStrategy.getTokenReward(pricingStrategy, amount);
+        uint tokenAmount = (amount / (1 ether)).times(multiplier);
 
-        TokenAddressEvent(2222, addressToken);
-        TokenAddressEvent(tokenAmount, addressToken);
-
-        //tokenReward.transfer(msg.sender, tokenAmount);
-        fundingGoalIsReached = amountRaised >= fundingGoal;
-        TokenAddressEvent(3333, addressToken);
-        if (amountRaised >= fundingCap)
-        {
-            fundingCapIsReached = true;
-            CapReached(beneficiary, amountRaised);
-            crowdsaleIsClosed = true;
-        }
-
+        // TODO: this line breaks things  
+        // TODO: test if the same person donates twice, I think our approach is wrong in that case        
+        // tokenReward.transfer(msg.sender, tokenAmount);
+        // FundTransfer(msg.sender, amount, true);
         
-    }
-
-    // TODO remove
-    function testSend() payable whenNotPaused fundingCapNotReached crowdSaleNotClosed
-    {
-        
-
-        // The amount received from the sender
-        uint amount = msg.value;
-        TokenAddressEvent(msg.value, addressToken);
-// The actual amount contributed should not cause the cap to be exceeded
-        uint excess = amountRaised.plus(amount).minus(fundingCap);
-
-
-        if (excess > 0)
-        {
-            amount -= excess;
-            msg.sender.transfer(excess); // return excess to sender
-        }
-        TokenAddressEvent(11111, addressToken);
-
-        // Update balance of sender and amount raised
-        balanceOf[msg.sender] += amount;
-        
-        amountRaised += amount;
-
-        // Transfer tokens to sender
-        uint multiplier = 5000; // TODO Pricing strategy
-        uint tokenAmount = (amount * 1 ether).times(multiplier);// PricingStrategy.getTokenReward(pricingStrategy, amount);
-        tokenReward.transfer(msg.sender, tokenAmount);
-        FundTransfer(msg.sender, amount, true);
-        TokenAddressEvent(22222, addressToken);
-
         // Has the funding goal been reached?
         fundingGoalIsReached = amountRaised >= fundingGoal;
 
@@ -162,9 +110,8 @@ contract Quantstamp is Ownable, Pausable
             CapReached(beneficiary, amountRaised);
             crowdsaleIsClosed = true;
         }
+        
     }
-
-
 
     /**
     * Test function for setting variables
@@ -174,7 +121,6 @@ contract Quantstamp is Ownable, Pausable
     function setTestValue(uint value) external
     {
         testValue = value;
-        TokenAddressEvent(54321, addressToken);
         ChangedTestValue(testValue, value);
     }
 
