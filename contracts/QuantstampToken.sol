@@ -18,7 +18,7 @@ contract QuantstampToken is StandardToken, Ownable {
     string public constant symbol = "QSP";
     uint8 public constant decimals = 18;
     uint256 public constant INITIAL_SUPPLY = 1000000000 * (10 ** uint256(decimals));
-    bool transferEnabled = false;
+    bool public transferEnabled = false;
 
     // If transfer is enabled, then anybody can perform a transfer; otherwise,
     // only the owner or the token sale contract can perform a transfer

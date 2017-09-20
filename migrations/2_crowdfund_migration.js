@@ -1,36 +1,37 @@
-var ERC20Lib = artifacts.require("./ERC20Lib.sol");
-var SafeMathLib = artifacts.require("./SafeMathLib.sol");
-var StandardToken = artifacts.require("./StandardToken.sol");
-var Ownable = artifacts.require("./Ownable.sol");
-var Pausable = artifacts.require("./Pausable.sol");
-var PricingStrategy = artifacts.require("./PricingStrategy.sol");
-var Quantstamp = artifacts.require("./Quantstamp.sol");
+var SafeMath = artifacts.require("./zeppelin/math/SafeMath.sol");
+var ERC20 = artifacts.require("./zeppelin/token/ERC20.sol");
+var ERC20Basic = artifacts.require("./zeppelin/token/ERC20Basic.sol");
+var BurnableToken = artifacts.require("./zeppelin/token/BurnableToken.sol");
+var BasicToken = artifacts.require("./zeppelin/token/BasicToken.sol");
+var StandardToken = artifacts.require("./zeppelin/token/StandardToken.sol");
+var Ownable = artifacts.require("./zeppelin/ownership/Ownable.sol");
+var Pausable = artifacts.require("./zeppelin/lifecycle/Pausable.sol");
+var QuantstampToken = artifacts.require("./QuantstampToken.sol");
+var QuantstampSale = artifacts.require("./QuantstampSale.sol");
 
 module.exports = function(deployer, network, accounts) {
     console.log("Accounts: " + accounts);
-    deployer.deploy(SafeMathLib);
 
+    deployer.deploy(SafeMath);
     deployer.deploy(Ownable);
     deployer.link(Ownable, Pausable);
     deployer.deploy(Pausable);
 
-    deployer.link(SafeMathLib, ERC20Lib);
-    deployer.deploy(ERC20Lib);
-    
+    deployer.deploy(BasicToken);
+    deployer.link(BasicToken, SafeMath);
+    deployer.link(BasicToken, ERC20Basic);
 
-    deployer.link(ERC20Lib, StandardToken);
+    deployer.deploy(StandardToken);
+    deployer.link(StandardToken, BasicToken);
 
-    deployer.link(SafeMathLib, PricingStrategy);
-    deployer.deploy(PricingStrategy);
+    deployer.deploy(QuantstampToken);
+    deployer.link(QuantstampToken, StandardToken);
+    deployer.link(QuantstampToken, Ownable);
 
-    deployer.link(SafeMathLib, Quantstamp);
-    deployer.link(PricingStrategy, Quantstamp);
-    deployer.link(Ownable, Quantstamp);
-    deployer.link(Pausable, Quantstamp);
+    deployer.deploy(QuantstampToken).then(
+        function() {
+            return deployer.deploy(QuantstampSale, accounts[0], 10, 20, 60, 100, QuantstampToken.address);
+        }
+    )
 
-    // TODO: fill in appropriate values
-    deployer.deploy(StandardToken, "QuantstampToken", "QSP", 10, 1000000000).then(function(){ 
-        //return deployer.deploy(Quantstamp, 0x7e5f4552091a69125d5dfcb7b8c2659029395bdf, 1000, 100000, 60, StandardToken.address);
-        return deployer.deploy(Quantstamp, accounts[0], 10, 20, 60, StandardToken.address);
-    });
 };
