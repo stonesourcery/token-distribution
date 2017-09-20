@@ -25,6 +25,18 @@ contract('QuantstampToken (Basic Tests)', function(accounts) {
   var user2 = accounts[2];
   var user3 = accounts[3];
 
+  it("should have 18 decimal places", async function() {
+    let token = await QuantstampToken.deployed();
+    var decimals = await token.decimals();
+    assert.equal(decimals, 18);
+  });
+
+  it("transferEnabled is initialized to false", async function() {
+    let token = await QuantstampToken.deployed();
+    var result = await token.transferEnabled();
+    assert.equal(result, false);
+  });
+
   it("should not allow a regular user to transfer before they are enabled", async function() {
       let token = await QuantstampToken.deployed();
       try{
@@ -79,7 +91,7 @@ contract('QuantstampToken (Basic Tests)', function(accounts) {
       let isEnabledBefore = await token.transferEnabled();
       assert(!isEnabledBefore, "transfers should not be enabled");
       await token.enableTransfer();
-      let isEnabledAfter = await token.transferEnabled(); 
+      let isEnabledAfter = await token.transferEnabled();
       assert(isEnabledAfter, "transfers should be enabled");
   });
 
