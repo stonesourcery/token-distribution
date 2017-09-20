@@ -152,10 +152,35 @@ contract('QuantstampToken (Transfer Ownership Tests)', function(accounts) {
       assert.equal(saleBalance, initialSupply, "the crowdsale should now have all tokens");
       assert.equal(originalOwnerBalance, 0, "the original owner should now have zero tokens");
   });
+});
 
+contract('QuantstampToken (token burning tests)', function(accounts) {
 
+  // account[0] points to the owner on the testRPC setup
+  var owner = accounts[0];
+  var user1 = accounts[1];
+  var user2 = accounts[2];
+  var user3 = accounts[3];
 
+  it("non-owner should not be able to burn tokens when transfers are not enabled", async function() {
+    let token = await QuantstampToken.deployed();
+    let transferEnabled = await token.transferEnabled();
+    assert(!transferEnabled);
 
+    // Owner transfers 10 tokens to user1
+    await token.transfer(user1, 10);
+    let balance = await token.balanceOf(user1);
+    assert.equal(balance, 10);
+
+    // Recipient tries to burn 3 tokens when transfers are not enabled
+    try {
+      await token.burn(3, {from: user1});
+    }
+    catch (e) {
+      return true;
+    }
+    throw new Error("a regular user was able to burn tokens when transfers were not enabled")
+  });
 });
 
 
