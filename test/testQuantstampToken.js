@@ -1,6 +1,7 @@
 
 var QuantstampToken = artifacts.require("./QuantstampToken.sol");
 var QuantstampSale = artifacts.require("./QuantstampSale.sol");
+var bigInt = require("big-integer");
 
 
 const timeTravel = function (time) {
@@ -45,8 +46,20 @@ contract('QuantstampToken', function(accounts) {
   it("should allow the deployer (owner) of the token to make transfers", async function() {
       let token = await QuantstampToken.deployed();
       let sale = await QuantstampSale.deployed();
+      await token.transfer(sale.address, 10 ** 26);
+      let ownerBalance = await token.balanceOf(owner);
+      let saleBalance = await token.balanceOf(sale.address);
+      let initialSupply = await token.INITIAL_SUPPLY();
+      let totalSupply = await token.totalSupply();
+      ownerBalance = ownerBalance.toNumber();
+      saleBalance = saleBalance.toNumber();
+      initialSupply = initialSupply.toNumber();
+      totalSupply = totalSupply.toNumber();
 
-      assert(false, "unimplemented");
+      assert.equal(ownerBalance, bigInt("9e26"), "the owner should now have 90% of the original funds");
+      assert.equal(saleBalance, 10 ** 26, "the crowdSale should now have 10% of the original funds");
+      assert.equal(totalSupply, initialSupply, "the total supply should equal the initial supply");
+
   });
 
   it("should not allow a regular user to enable transfers", async function() {
@@ -59,8 +72,6 @@ contract('QuantstampToken', function(accounts) {
       }
       throw new Error("a regular user was able to call enableTransfer")
   });
-
-
 
   it("should enable transfers after invoking enableTransfer as owner", async function() {
       let token = await QuantstampToken.deployed();

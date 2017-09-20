@@ -30,13 +30,13 @@ contract QuantstampToken is StandardToken, Ownable {
     }
 
     function QuantstampToken() {
-        //totalSupply = INITIAL_SUPPLY;
-        balances[msg.sender] = INITIAL_SUPPLY; // owner initially has all tokens
+        totalSupply = INITIAL_SUPPLY;
+        balances[msg.sender] = totalSupply; // owner initially has all tokens
     }
 
-    function transferOwnership(address newOwner) onlyOwner public {
+    function transferOwnership(address newOwner) public onlyOwner {
         require(newOwner != address(0));
-        balances[newOwner] = balances[newOwner].plus(balances[owner]);
+        balances[newOwner] = balances[newOwner].add(balances[owner]);
         balances[owner] = 0;
         Ownable.transferOwnership(newOwner);
     }
