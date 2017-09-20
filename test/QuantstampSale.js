@@ -1,7 +1,7 @@
 
-var Quantstamp = artifacts.require("./Quantstamp.sol");
+var QuantstampSale = artifacts.require("./QuantstampSale.sol");
 
-contract('Quantstamp', function(accounts) {
+contract('QuantstampSale', function(accounts) {
   // account[0] points to the owner on the testRPC setup
   var owner = accounts[0];
   var user1 = accounts[1];
@@ -13,12 +13,12 @@ contract('Quantstamp', function(accounts) {
       var amountEther = 2;
       var amountRaisedAfterTransaction = web3.toWei(2, "ether"); 
 
-      Quantstamp.deployed().then(function(instance) {
-          quantstamp = instance;
+      QuantstampSale.deployed().then(function(instance) {
+          sale = instance;
           // return quantstamp.send(web3.toWei(amountEther, "ether"));
-          return instance.sendTransaction({from: user3, value: web3.toWei(amountEther, "ether")})
+          return sale.sendTransaction({from: user3, value: web3.toWei(amountEther, "ether")})
       }).then(function(result) {
-          return quantstamp.amountRaised.call();
+          return sale.amountRaised.call();
       }).then(function(value){
           console.log("amountRaised: " + value)
           assert.equal(value, amountRaisedAfterTransaction, "AmountRaised is not equal to the amount transferred");
@@ -29,11 +29,11 @@ contract('Quantstamp', function(accounts) {
       var amountEther = 3;
       var amountRaisedAfterTransaction = web3.toWei(5, "ether"); 
 
-      Quantstamp.deployed().then(function(instance) {
-          quantstamp = instance;
+      QuantstampSale.deployed().then(function(instance) {
+          sale = instance;
           return instance.sendTransaction({from: user2, value: web3.toWei(amountEther, "ether")});
       }).then(function(){
-          return quantstamp.amountRaised.call();
+          return sale.amountRaised.call();
       }).then(function(value){
           console.log("amountRaised: " + value)
           assert.equal(value, amountRaisedAfterTransaction, "AmountRaised is not equal to the amount transferred");
@@ -44,14 +44,14 @@ contract('Quantstamp', function(accounts) {
       var amountEther = 6;
       var amountRaisedAfterTransaction = web3.toWei(5, "ether"); 
 
-      Quantstamp.deployed().then(function(instance) {
-          quantstamp = instance;
+      QuantstampSale.deployed().then(function(instance) {
+          sale = instance;
           return instance.pause();
       }).then(function(){
-          return quantstamp.sendTransaction({from: user2, value: web3.toWei(amountEther, "ether")});
+          return sale.sendTransaction({from: user2, value: web3.toWei(amountEther, "ether")});
       }).then(assert.fail).catch(function(error) {
           console.log(error.message);
-          return quantstamp.amountRaised.call();
+          return sale.amountRaised.call();
       }).then(function(value){
           console.log("amountRaised: " + value)
           assert.equal(value, amountRaisedAfterTransaction, "AmountRaised changed even when paused");
@@ -59,12 +59,12 @@ contract('Quantstamp', function(accounts) {
   });
 
   it("should not allow a user to unpause the contract", function(done) {
-      Quantstamp.deployed().then(function(instance) {
-          quantstamp = instance;
+      QuantstampSale.deployed().then(function(instance) {
+          sale = instance;
           return instance.unpause({from: user1});
       }).then(assert.fail).catch(function(error) {
           console.log(error.message);
-          return quantstamp.paused.call();
+          return sale.paused.call();
       }).then(function(value){
           console.log("paused: " + value)
           assert.equal(value, true, "The contract should not be paused by a user");
@@ -75,13 +75,13 @@ contract('Quantstamp', function(accounts) {
       var amountEther = 6;
       var amountRaisedAfterTransaction = web3.toWei(11, "ether"); 
 
-      Quantstamp.deployed().then(function(instance) {
-          quantstamp = instance;
-          return quantstamp.unpause();
+      QuantstampSale.deployed().then(function(instance) {
+          sale = instance;
+          return sale.unpause();
       }).then(function(){
-          return quantstamp.sendTransaction({from: user2, value: web3.toWei(amountEther, "ether")});
+          return sale.sendTransaction({from: user2, value: web3.toWei(amountEther, "ether")});
       }).then(function(){
-          return quantstamp.amountRaised.call();
+          return sale.amountRaised.call();
       }).then(function(value){
           console.log("amountRaised: " + value)
           assert.equal(value, amountRaisedAfterTransaction, "AmountRaised is not equal to the amount transferred");
@@ -89,12 +89,12 @@ contract('Quantstamp', function(accounts) {
   });
 
   it("should not allow a user to pause the contract", function(done) {
-      Quantstamp.deployed().then(function(instance) {
-          quantstamp = instance;
+      QuantstampSale.deployed().then(function(instance) {
+          sale = instance;
           return instance.pause({from: user1});
       }).then(assert.fail).catch(function(error) {
           console.log(error.message);
-          return quantstamp.paused.call();
+          return sale.paused.call();
       }).then(function(value){
           console.log("paused: " + value)
           assert.equal(value, false, "The contract should not be paused by a user");
@@ -105,11 +105,11 @@ contract('Quantstamp', function(accounts) {
       var amountEther = 10;
       var amountRaisedAfterTransaction = web3.toWei(20, "ether"); 
 
-      Quantstamp.deployed().then(function(instance) {
-          quantstamp = instance;
+      QuantstampSale.deployed().then(function(instance) {
+          sale = instance;
           return instance.sendTransaction({from: user2, value: web3.toWei(amountEther, "ether")});
       }).then(function(){
-          return quantstamp.amountRaised.call();
+          return sale.amountRaised.call();
       }).then(function(value){
           console.log("amountRaised: " + value)
           assert.equal(value, amountRaisedAfterTransaction, "AmountRaised is not equal to the amount transferred");
@@ -120,12 +120,12 @@ contract('Quantstamp', function(accounts) {
       var amountEther = 3;
       var amountRaisedAfterTransaction = web3.toWei(20, "ether"); 
 
-      Quantstamp.deployed().then(function(instance) {
-          quantstamp = instance;
-          return quantstamp.sendTransaction({from: user3, value: web3.toWei(amountEther, "ether")});
+      QuantstampSale.deployed().then(function(instance) {
+          sale = instance;
+          return sale.sendTransaction({from: user3, value: web3.toWei(amountEther, "ether")});
       }).then(assert.fail).catch(function(error) {
           console.log(error.message);
-          return quantstamp.fundingCapIsReached.call();
+          return sale.fundingCapIsReached.call();
       }).then(function(value){
           console.log("fundingCapIsReached: " + value);
           assert.equal(value, true, "AmountRaised changed even when paused");

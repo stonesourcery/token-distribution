@@ -1,7 +1,7 @@
 pragma solidity ^0.4.15;
 
-import './zeppelin/token/StandardToken.sol';
-import './zeppelin/ownership/Ownable.sol';
+import './token/StandardToken.sol';
+import './ownership/Ownable.sol';
 
 /**
  * The Quantstamp token (QSP) has a fixed supply and restricts the ability

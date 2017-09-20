@@ -1,7 +1,7 @@
 pragma solidity ^0.4.15;
 
-import './zeppelin/lifecycle/Pausable.sol';
-import './zeppelin/math/SafeMath.sol';
+import './lifecycle/Pausable.sol';
+import './math/SafeMath.sol';
 import './QuantstampToken.sol';
 
 /*interface token {
