@@ -21,7 +21,7 @@ contract QuantstampToken is StandardToken, Ownable {
     bool public transferEnabled = false;
 
     // If transfer is enabled, then anybody can perform a transfer; otherwise,
-    // only the owner or the token sale contract can perform a transfer
+    // only the owner can perform a transfer
     modifier onlyWhenTransferEnabled() {
         if (!transferEnabled) {
             require(msg.sender == owner);
@@ -30,13 +30,13 @@ contract QuantstampToken is StandardToken, Ownable {
     }
 
     function QuantstampToken() {
-        totalSupply = INITIAL_SUPPLY;
-        balances[msg.sender] = totalSupply; // owner initially has all tokens
+        //totalSupply = INITIAL_SUPPLY;
+        balances[msg.sender] = INITIAL_SUPPLY; // owner initially has all tokens
     }
 
     function transferOwnership(address newOwner) onlyOwner public {
         require(newOwner != address(0));
-        balances[newOwner] = balances[owner];
+        balances[newOwner] = balances[newOwner].plus(balances[owner]);
         balances[owner] = 0;
         Ownable.transferOwnership(newOwner);
     }

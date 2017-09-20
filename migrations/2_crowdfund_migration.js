@@ -10,7 +10,7 @@ var QuantstampToken = artifacts.require("./QuantstampToken.sol");
 var QuantstampSale = artifacts.require("./QuantstampSale.sol");
 
 module.exports = function(deployer, network, accounts) {
-    console.log("Accounts: " + accounts);
+    //console.log("Accounts: " + accounts);
 
     deployer.deploy(SafeMath);
     deployer.deploy(Ownable);
