@@ -38,17 +38,16 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
         addrCanTransferTokens = msg.sender; // this is updated to be the crowdsale
     }
 
-    function transferTokens(address _to) public onlyOwner {
+    function transferTokens(address _to) external onlyOwner {
         require(_to != address(0));
         balances[_to] = balances[_to].add(balances[owner]);
         balances[owner] = 0;
         addrCanTransferTokens = _to;
-
     }
 
     // The owner can enable the ability for anyone to transfer tokens.
     // Once enabled, it cannot be disabled again.
-    function enableTransfer() onlyOwner {
+    function enableTransfer() external onlyOwner {
         transferEnabled = true;
     }
 
@@ -58,5 +57,9 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
 
     function transferFrom(address _from, address _to, uint256 _value) public onlyWhenTransferEnabled returns (bool) {
         return super.transferFrom(_from, _to, _value);
+    }
+
+    function burn(uint256 _value) public onlyWhenTransferEnabled {
+        super.burn(_value);
     }
 }

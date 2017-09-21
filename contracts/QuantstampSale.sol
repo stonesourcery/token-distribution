@@ -4,10 +4,6 @@ import './lifecycle/Pausable.sol';
 import './math/SafeMath.sol';
 import './QuantstampToken.sol';
 
-/*interface token {
-    function transfer(address receiver, uint amount);
-}*/
-
 contract QuantstampSale is Pausable {
 
     using SafeMath for uint256;
@@ -52,7 +48,7 @@ contract QuantstampSale is Pausable {
         uint amount = msg.value;
         balanceOf[msg.sender] += amount;
         amountRaised += amount;
-        
+
         tokenReward.transfer(msg.sender, amount.mul(rate));
         FundTransfer(msg.sender, amount, true);
 
@@ -69,7 +65,7 @@ contract QuantstampSale is Pausable {
         }
     }
 
-    function transferTokens(address _to) onlyOwner{ 
+    function transferTokens(address _to) onlyOwner{
         tokenReward.transfer(_to, tokenReward.balanceOf(this));
     }
 
