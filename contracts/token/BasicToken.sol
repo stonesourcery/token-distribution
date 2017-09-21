@@ -14,6 +14,8 @@ contract BasicToken is ERC20Basic {
 
   mapping(address => uint256) balances;
 
+
+
   /**
   * @dev transfer token for a specified address
   * @param _to The address to transfer to.

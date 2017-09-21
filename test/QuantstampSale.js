@@ -1,6 +1,33 @@
 
 var QuantstampSale = artifacts.require("./QuantstampSale.sol");
+var QuantstampToken = artifacts.require("./QuantstampToken.sol");
 
+
+
+contract('QuantstampSale (Basic Tests)', function(accounts) {
+  // account[0] points to the owner on the testRPC setup
+  var owner = accounts[0];
+  var user1 = accounts[1];
+  var user2 = accounts[2];
+  var user3 = accounts[3];
+
+  it("should send 2 ether to the crowdfunding campaign", async function(done) {
+      var amountEther = 2;
+      var amountRaisedAfterTransaction = web3.toWei(2, "ether"); 
+      let sale = await QuantstampSale.deployed();
+      let token = await QuantstampToken.deployed();
+
+      let saleBalance = await token.balanceOf(sale.address);
+      console.log(saleBalance);
+      await sale.sendTransaction({from: user3, value: web3.toWei(amountEther, "ether")})
+      console.log("Hit?");
+      //assert.equal(decimals, 18);
+  });
+
+
+});
+
+/*
 contract('QuantstampSale', function(accounts) {
   // account[0] points to the owner on the testRPC setup
   var owner = accounts[0];
@@ -133,3 +160,4 @@ contract('QuantstampSale', function(accounts) {
   });
 
 });
+*/

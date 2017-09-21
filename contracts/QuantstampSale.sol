@@ -47,6 +47,8 @@ contract QuantstampSale is Pausable {
         tokenReward = QuantstampToken(addressOfTokenUsedAsReward);
     }
 
+
+
     function () payable whenNotPaused beforeDeadline saleNotClosed {
         uint amount = msg.value;
         balanceOf[msg.sender] += amount;
@@ -65,6 +67,10 @@ contract QuantstampSale is Pausable {
             fundingCapReached = true;
             saleClosed = true;
         }
+    }
+
+    function transferTokens(address _to) onlyOwner{ 
+        tokenReward.transfer(_to, tokenReward.balanceOf(this));
     }
 
     // Allows the owner to withdraw all contributions to the
