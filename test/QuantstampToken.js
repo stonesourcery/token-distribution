@@ -25,20 +25,34 @@ contract('QuantstampToken (Basic Tests)', function(accounts) {
   var user2 = accounts[2];
   var user3 = accounts[3];
 
+  beforeEach(function() {
+    return QuantstampSale.deployed().then(function(instance) {
+        sale = instance;
+        return QuantstampToken.deployed();
+    }).then(function(instance2){
+      token = instance2;
+      return token.INITIAL_SUPPLY();
+    });
+  });
+
   it("should have 18 decimal places", async function() {
-    let token = await QuantstampToken.deployed();
     var decimals = await token.decimals();
     assert.equal(decimals, 18);
   });
 
   it("transferEnabled is initialized to false", async function() {
-    let token = await QuantstampToken.deployed();
     var result = await token.transferEnabled();
     assert.equal(result, false);
   });
 
+  it("should have an initial owner balance of 1 billion tokens", async function() {
+      let ownerBalance = (await token.balanceOf(owner)).toNumber();
+
+      // Note: 1 billion * 1 miniQSP => (10 ** 9) * (10 ** 18) = (10 ** 27)
+      assert.equal(ownerBalance, bigInt("1e27"), "the owner balance should initially be 1 billion tokens");
+  });
+
   it("should not allow a regular user to transfer before they are enabled", async function() {
-      let token = await QuantstampToken.deployed();
       try{
         await token.transfer(user2, 10, {from: user1});
       }
@@ -48,17 +62,7 @@ contract('QuantstampToken (Basic Tests)', function(accounts) {
       throw new Error("a regular user transferred before they were enabled")
   });
 
-  it("should have an initial owner balance of 1 billion tokens", async function() {
-      let token = await QuantstampToken.deployed();
-      let ownerBalance = await token.balanceOf(owner);
-      ownerBalance = ownerBalance.toNumber();
-      // 1 billion * 1 miniQSP => (10 ** 9) * (10 ** 18) = (10 ** 27)
-      assert.equal(ownerBalance, bigInt("1e27"), "the owner balance should initially be 1 billion tokens");
-  });
-
   it("should allow the deployer (owner) of the token to make transfers", async function() {
-      let token = await QuantstampToken.deployed();
-      let sale = await QuantstampSale.deployed();
       await token.transfer(sale.address, 10 ** 26);
       let ownerBalance = await token.balanceOf(owner);
       let saleBalance = await token.balanceOf(sale.address);
@@ -87,7 +91,6 @@ contract('QuantstampToken (Basic Tests)', function(accounts) {
   });
 
   it("should enable transfers after invoking enableTransfer as owner", async function() {
-      let token = await QuantstampToken.deployed();
       let isEnabledBefore = await token.transferEnabled();
       assert(!isEnabledBefore, "transfers should not be enabled");
       await token.enableTransfer();
@@ -95,63 +98,6 @@ contract('QuantstampToken (Basic Tests)', function(accounts) {
       assert(isEnabledAfter, "transfers should be enabled");
   });
 
-});
-
-
-contract('QuantstampToken (Transfer Ownership Tests)', function(accounts) {
-  // account[0] points to the owner on the testRPC setup
-  var owner = accounts[0];
-  var user1 = accounts[1];
-  var user2 = accounts[2];
-  var user3 = accounts[3];
-
-  it("should have all tokens in the owner's balance", async function() {
-      let token = await QuantstampToken.deployed();
-      let ownerBalance = await token.balanceOf(owner);
-      let initialSupply = await token.INITIAL_SUPPLY();
-      initialSupply = initialSupply.toNumber();
-      ownerBalance = ownerBalance.toNumber();
-      assert.equal(ownerBalance, initialSupply, "the owner's balance should be the totalSupply");
-  });
-
-  it("should not allow a regular user to transfer ownership", async function() {
-      let token = await QuantstampToken.deployed();
-      try{
-        await token.transferOwnership(user2, {from: user1});
-      }
-      catch (e){
-        return true;
-      }
-      throw new Error("a regular user was able to call transferOwnership")
-  });
-
-  it("should allow the owner to transfer ownership to the crowdsale", async function() {
-      let token = await QuantstampToken.deployed();
-      let sale = await QuantstampSale.deployed();
-      let tokenOwner = await token.owner();
-      let saleAddr = await sale.address;
-      assert.equal(owner, tokenOwner, "the token should be initially owned by the account[0] owner");
-      await token.transferOwnership(saleAddr);
-      let tokenOwnerAfter = await token.owner();
-      assert.equal(saleAddr, tokenOwnerAfter, "the token should be owned by the crowdsale after transferOwnership");
-  });
-
-  it("should have all tokens in the account of the crowdsale after transfer", async function() {
-      let token = await QuantstampToken.deployed();
-      let sale = await QuantstampSale.deployed();
-      let saleAddr = await sale.address;
-
-      let initialSupply = await token.INITIAL_SUPPLY();
-      let saleBalance = await token.balanceOf(saleAddr);
-      let originalOwnerBalance = await token.balanceOf(owner);
-
-      initialSupply = initialSupply.toNumber();
-      saleBalance = saleBalance.toNumber();
-      originalOwnerBalance = originalOwnerBalance.toNumber();
-
-      assert.equal(saleBalance, initialSupply, "the crowdsale should now have all tokens");
-      assert.equal(originalOwnerBalance, 0, "the original owner should now have zero tokens");
-  });
 });
 
 contract('QuantstampToken (token burning tests)', function(accounts) {
@@ -183,4 +129,73 @@ contract('QuantstampToken (token burning tests)', function(accounts) {
   });
 });
 
+/*
+contract('QuantstampToken (Transfer Ownership Tests)', function(accounts) {
+  // account[0] points to the owner on the testRPC setup
+  var owner = accounts[0];
+  var user1 = accounts[1];
+  var user2 = accounts[2];
+  var user3 = accounts[3];
 
+  it("should have all tokens in the owner's balance", async function() {
+      let token = await QuantstampToken.deployed();
+      let ownerBalance = await token.balanceOf(owner);
+      let initialSupply = await token.INITIAL_SUPPLY();
+      initialSupply = initialSupply.toNumber();
+      ownerBalance = ownerBalance.toNumber();
+      assert.equal(ownerBalance, initialSupply, "the owner's balance should be the totalSupply");
+  });
+
+
+
+  it("should be able to transfer all tokens from owner to crowdsale and back", async function() {
+      let token = await QuantstampToken.deployed();
+      let sale = await QuantstampSale.deployed();
+      let saleAddr = await sale.address;
+
+      // owner transfers tokens to crowdsale address
+      token.transferTokens(saleAddr);
+
+      let initialSupply = (await token.INITIAL_SUPPLY()).toNumber();
+      let saleBalance = (await token.balanceOf(saleAddr)).toNumber();
+      let ownerBalance = (await token.balanceOf(owner)).toNumber();
+
+      assert.equal(saleBalance, initialSupply, "the crowdsale should now have all tokens");
+      assert.equal(ownerBalance, 0, "the original owner should now have zero tokens");
+
+      // owner transfers tokens back to itself
+      token.transferTokens(owner);
+
+      saleBalance = (await token.balanceOf(saleAddr)).toNumber();
+      ownerBalance = (await token.balanceOf(owner)).toNumber();
+
+      assert.equal(ownerBalance, initialSupply, "the owner should have all the tokens");
+      assert.equal(saleBalance, 0, "the crowdsale shouldn't have any tokens");
+  });
+
+  it("should not allow a regular user to transfer ownership", async function() {
+      let token = await QuantstampToken.deployed();
+      try{
+        await token.transferOwnership(user2, {from: user1});
+      }
+      catch (e){
+        return true;
+      }
+      throw new Error("a regular user was able to call transferOwnership")
+  });
+
+  it("should allow the owner to transfer ownership to the crowdsale", async function() {
+      let token = await QuantstampToken.deployed();
+      let sale = await QuantstampSale.deployed();
+      let tokenOwner = await token.owner();
+      let saleAddr = await sale.address;
+      assert.equal(owner, tokenOwner, "the token should be initially owned by the account[0] owner");
+      await token.transferOwnership(saleAddr);
+      let tokenOwnerAfter = await token.owner();
+      assert.equal(saleAddr, tokenOwnerAfter, "the token should be owned by the crowdsale after transferOwnership");
+  });
+});
+
+
+});
+*/

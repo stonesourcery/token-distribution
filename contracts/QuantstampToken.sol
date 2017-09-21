@@ -21,13 +21,13 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
     uint8 public constant decimals = 18;
     uint256 public constant INITIAL_SUPPLY = 1000000000 * (10 ** uint256(decimals));
     bool public transferEnabled = false;
-    address addrCanTransferTokens;
+    address crowdSaleAddr;
 
     // If transfer is enabled, then anybody can perform a transfer; otherwise,
     // only the owner can perform a transfer
     modifier onlyWhenTransferEnabled() {
         if (!transferEnabled) {
-            require(msg.sender == owner || msg.sender == addrCanTransferTokens);
+            require(msg.sender == owner || msg.sender == crowdSaleAddr);
         }
         _;
     }
@@ -35,14 +35,12 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
     function QuantstampToken() {
         totalSupply = INITIAL_SUPPLY;
         balances[msg.sender] = totalSupply; // owner initially has all tokens
-        addrCanTransferTokens = msg.sender; // this is updated to be the crowdsale
+        //addrCanTransferTokens = msg.sender; // this is updated to be the crowdsale
     }
 
-    function transferTokens(address _to) external onlyOwner {
-        require(_to != address(0));
-        balances[_to] = balances[_to].add(balances[owner]);
-        balances[owner] = 0;
-        addrCanTransferTokens = _to;
+    function setCrowdsale(address _crowdSaleAddr) external onlyOwner {
+        crowdSaleAddr = _crowdSaleAddr;
+        approve(crowdSaleAddr, balances[owner]);
     }
 
     // The owner can enable the ability for anyone to transfer tokens.

@@ -49,7 +49,7 @@ contract QuantstampSale is Pausable {
         balanceOf[msg.sender] += amount;
         amountRaised += amount;
 
-        tokenReward.transfer(msg.sender, amount.mul(rate));
+        tokenReward.transferFrom(tokenReward.owner(), msg.sender, amount.mul(rate));
         FundTransfer(msg.sender, amount, true);
 
         if (!fundingGoalReached) {
@@ -65,8 +65,9 @@ contract QuantstampSale is Pausable {
         }
     }
 
-    function transferTokens(address _to) onlyOwner{
-        tokenReward.transfer(_to, tokenReward.balanceOf(this));
+    // can safely be removed from production code after testing
+    function testTransferTokens(address _to, uint amount) external onlyOwner {
+        tokenReward.transferFrom(tokenReward.owner(), _to, amount);
     }
 
     // Allows the owner to withdraw all contributions to the
