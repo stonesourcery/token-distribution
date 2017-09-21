@@ -21,10 +21,10 @@ contract('Crowdsale Allowance of Tokens', function(accounts) {
   });
 
   it("should be an allowance so that the crowdsale can transfer the tokens", async function() {
-      let ownerBalance = (await token.balanceOf(owner)).toNumber();
-      await token.setCrowdsale(sale.address);
+      let crowdSaleBalance = (await token.crowdSaleSupply()).toNumber();
+      await token.setCrowdsale(sale.address, crowdSaleBalance);
       let allowance = (await token.allowance(owner, sale.address)).toNumber();
-      assert.equal(allowance, ownerBalance);
+      assert.equal(allowance, crowdSaleBalance);
   });
 
   it("should be able to send tokens to user from crowdsale allowance", async function() {
@@ -73,86 +73,26 @@ contract('Multiple Crowdsales', function(accounts) {
 
 
   it("should accept 2 ether for the crowdfunding campaign", async function() {
-      await token.setCrowdsale(sale.address); // ensures crowdsale has allowance of tokens
+      let crowdSaleAllowance = (await token.crowdSaleSupply()).toNumber();
+      await token.setCrowdsale(sale.address, crowdSaleAllowance); // ensures crowdsale has allowance of tokens
       let tokenOwner = await token.owner();
 
       var amountEther = 2;
       var amountWei = web3.toWei(amountEther, "ether");
 
       let allowance = (await token.allowance(tokenOwner, sale.address)).toNumber();
+      assert.equal(allowance, crowdSaleAllowance, "The allowance should be equal to the crowdsale allowance");
 
       await sale.sendTransaction({from: user2,  value: web3.toWei(amountEther, "ether")});
 
       let allowanceAfter = (await token.allowance(tokenOwner, sale.address)).toNumber();
-
       let user2BalanceAfter = (await token.balanceOf(user2)).toNumber();
       let ownerBalanceAfter = (await token.balanceOf(tokenOwner)).toNumber();
 
       assert.equal(allowance - (amountWei * rate), ownerBalanceAfter, "The crowdsale should have sent amountWei*rate miniQSP");
       assert.equal(user2BalanceAfter, amountWei * rate, "The user should have gained amountWei*rate miniQSP");
-      assert.equal(allowanceAfter + user2BalanceAfter, initialSupply, "The total tokens should remain the same");
+      assert.equal(allowanceAfter + user2BalanceAfter, crowdSaleAllowance, "The total tokens should remain the same");
   });
-/*
-  it("should transfer tokens back to the owner of the token", async function() {
-      let tokenOwner = await token.owner();
-
-      let saleBalance = (await token.balanceOf(tokenOwner)).toNumber();
-
-      let tokenOwnerBalance = await token.balanceOf(tokenOwner);
-      tokenOwnerBalance = tokenOwnerBalance.toNumber();
-
-      await sale.testTransferTokens(tokenOwner)
-
-      let saleBalanceAfter = await token.balanceOf(sale.address);
-      saleBalanceAfter = saleBalanceAfter.toNumber();
-
-      let tokenOwnerBalanceAfter = await token.balanceOf(tokenOwner);
-      tokenOwnerBalanceAfter = tokenOwnerBalanceAfter.toNumber();
-
-      assert.equal(saleBalanceAfter, 0, "The crowdsale no longer has tokens associated with it");
-      assert.equal(tokenOwnerBalanceAfter, tokenOwnerBalance + saleBalance, "All crowdsale tokens now belong to the token owner");
-  });
-/*
-  it("the owner of QuantstampToken should now send funds to the ICO", async function() {
-      let ownerBalance = await token.balanceOf(owner);
-      ownerBalance = ownerBalance.toNumber();
-
-      await token.transferTokens(ico.address);
-      let ownerBalanceAfter = await token.balanceOf(owner);
-      let tokenBalance = await token.balanceOf(token.address);
-      let icoBalance  = await token.balanceOf(ico.address);
-
-      ownerBalanceAfter = ownerBalanceAfter.toNumber();
-      tokenBalance = tokenBalance.toNumber();
-      icoBalance  = icoBalance.toNumber();
-
-      assert.equal(ownerBalanceAfter, 0, "The owner should not have any tokens after transferring");
-      assert.equal(tokenBalance, 0, "The Token should not have any tokens allocated to its address");
-      assert.equal(icoBalance, ownerBalance, "The crowdsale should have all the tokens from owner");
-  });
-
-  it("should accept 2 ether for the ICO", async function() {
-      var amountEther = 2;
-      var amountWei = web3.toWei(amountEther, "ether");
-
-      let icoBalance = await token.balanceOf(ico.address);
-      icoBalance = icoBalance.toNumber();
-
-      let user2Balance = await token.balanceOf(user2);
-      user2Balance = user2Balance.toNumber();
-
-      await ico.sendTransaction({from: user2,  value: web3.toWei(amountEther, "ether")});
-
-      let icoBalanceAfter = await token.balanceOf(ico.address);
-      icoBalanceAfter = icoBalanceAfter.toNumber();
-
-      let user2BalanceAfter = await token.balanceOf(user2);
-      user2BalanceAfter = user2BalanceAfter.toNumber();
-
-      assert.equal(icoBalance - (amountWei * ico_rate), icoBalanceAfter, "The crowdsale should have sent amountWei*rate miniQSP");
-      assert.equal(user2BalanceAfter, user2Balance + amountWei * ico_rate, "The user should have gained amountWei*rate miniQSP");
-  });
-*/
 
 });
 

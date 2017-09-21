@@ -21,7 +21,7 @@ contract('QSP-11: Owner withdrawal', function(accounts) {
   });
 
   it("owner should not be able to withdraw funds if the funding goal has not been reached", async function() {
-    await token.setCrowdsale(sale.address);
+    await token.setCrowdsale(sale.address, 0);
     let fundingGoal = (await sale.fundingGoal()).toNumber();
 
     let amountRaised = (await sale.amountRaised()).toNumber();
@@ -44,7 +44,7 @@ contract('QSP-11: Owner withdrawal', function(accounts) {
   });
 
   it("owner should be able to withdraw funds once funding goal is reached", async function() {
-    await token.setCrowdsale(sale.address);
+    await token.setCrowdsale(sale.address, 0);
     let fundingGoal = (await sale.fundingGoal()).toNumber();
 
     // this send cause the funding goal to be reached

@@ -21,7 +21,7 @@ contract('QSP-14: Capacity Constraint', function(accounts) {
   });
 
   it("crowdsale should stop accepting contributions when cap is reached", async function() {
-    await token.setCrowdsale(sale.address);
+    await token.setCrowdsale(sale.address, 0);
     let capacity = (await sale.fundingCap()).toNumber();
 
     // this send should work since capacity is not yet reached,

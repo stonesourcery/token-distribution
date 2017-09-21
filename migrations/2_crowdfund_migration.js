@@ -29,6 +29,8 @@ module.exports = function(deployer, network, accounts) {
     deployer.deploy(QuantstampToken);
     deployer.link(QuantstampToken, StandardToken);
     deployer.link(QuantstampToken, Ownable);
+    deployer.link(QuantstampToken, BurnableToken);
+    deployer.link(QuantstampToken, SafeMath);
 
     deployer.deploy(QuantstampToken).then(
         function() {
@@ -37,6 +39,6 @@ module.exports = function(deployer, network, accounts) {
             return deployer.deploy(QuantstampICO, accounts[0], 10, 20, 60, 50, QuantstampToken.address);
         });
 
-    
+
 
 };
