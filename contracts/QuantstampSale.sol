@@ -16,16 +16,16 @@ contract QuantstampSale is Pausable {
     uint public rate;
     QuantstampToken public tokenReward;
     mapping(address => uint256) public balanceOf;
-    bool fundingGoalReached = false;
-    bool fundingCapReached = false;
-    bool saleClosed = false;
+    bool public fundingGoalReached = false;
+    bool public fundingCapReached = false;
+    bool public saleClosed = false;
 
     event GoalReached(address _beneficiary, uint _amountRaised);
     event FundTransfer(address _backer, uint _amount, bool _isContribution);
 
-    modifier beforeDeadline() { if (now < deadline) _; }
-    modifier afterDeadline()  { if (now >= deadline) _; }
-    modifier saleNotClosed()  { if (!saleClosed) _; }
+    modifier beforeDeadline()   { require (now < deadline); _; }
+    modifier afterDeadline()    { require (now >= deadline); _; }
+    modifier saleNotClosed()    { require (!saleClosed); _; }
 
     function QuantstampSale(
         address ifSuccessfulSendTo,
