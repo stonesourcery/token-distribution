@@ -35,12 +35,13 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
     function QuantstampToken() {
         totalSupply = INITIAL_SUPPLY;
         balances[msg.sender] = totalSupply; // owner initially has all tokens
-        //addrCanTransferTokens = msg.sender; // this is updated to be the crowdsale
     }
 
     function setCrowdsale(address _crowdSaleAddr) external onlyOwner {
+        require(!transferEnabled);
+        approve(crowdSaleAddr, 0);
+        approve(_crowdSaleAddr, balances[owner]);
         crowdSaleAddr = _crowdSaleAddr;
-        approve(crowdSaleAddr, balances[owner]);
     }
 
     // The owner can enable the ability for anyone to transfer tokens.
