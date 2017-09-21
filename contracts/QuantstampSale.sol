@@ -44,16 +44,15 @@ contract QuantstampSale is Pausable {
         fundingGoal = fundingGoalInEthers * 1 ether;
         fundingCap = fundingCapInEthers * 1 ether;
         deadline = now + durationInMinutes * 1 minutes;
-        rate = rateQspToEther * 1 ether;
+        rate = rateQspToEther; //* 1 ether;
         tokenReward = QuantstampToken(addressOfTokenUsedAsReward);
     }
-
-
 
     function () payable whenNotPaused beforeDeadline saleNotClosed {
         uint amount = msg.value;
         balanceOf[msg.sender] += amount;
         amountRaised += amount;
+        
         tokenReward.transfer(msg.sender, amount.mul(rate));
         FundTransfer(msg.sender, amount, true);
 
