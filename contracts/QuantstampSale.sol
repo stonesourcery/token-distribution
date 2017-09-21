@@ -39,6 +39,7 @@ contract QuantstampSale is Pausable {
         uint rateQspToEther,
         address addressOfTokenUsedAsReward
     ) {
+        require(ifSuccessfulSendTo != address(0));
         beneficiary = ifSuccessfulSendTo;
         fundingGoal = fundingGoalInEthers * 1 ether;
         fundingCap = fundingCapInEthers * 1 ether;
@@ -77,10 +78,11 @@ contract QuantstampSale is Pausable {
     // beneficiary if and only if the funding goal has been reached.
     function ownerSafeWithdrawal() onlyOwner {
         require(fundingGoalReached);
-        if (beneficiary.send(amountRaised)) {
-            FundTransfer(beneficiary, amountRaised, false);
+        var balanceToSend = this.balance;
+        if (beneficiary.send(balanceToSend)) {
+            FundTransfer(beneficiary, balanceToSend, false);
         } else {
-            //If we fail to send the funds to beneficiary, unlock funders balance
+            // If we fail to send the funds to beneficiary, unlock funders balance
             fundingGoalReached = false;
         }
     }
