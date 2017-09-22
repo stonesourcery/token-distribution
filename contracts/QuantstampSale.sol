@@ -32,6 +32,8 @@ contract QuantstampSale is Pausable {
 
     // The ratio of QSP to Ether
     uint public rate;
+    uint public constant LOW_RANGE_RATE = 5000;
+    uint public constant HIGH_RANGE_RATE = 10000;
 
     // The token being sold
     QuantstampToken public tokenReward;
@@ -116,10 +118,9 @@ contract QuantstampSale is Pausable {
 
     /**
      * The owner can update the rate (QSP to ETH).
-     * TODO investigate possible race condition; pause first?
      */
     function setRate(uint _rate) external onlyOwner {
-        require(_rate >= 1);
+        require(_rate >= LOW_RANGE_RATE && _rate <= HIGH_RANGE_RATE);
         rate = _rate;
     }
 
