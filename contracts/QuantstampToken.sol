@@ -30,7 +30,6 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
     bool public transferEnabled = false;    // indicates if transferring tokens is enabled or not
     address crowdSaleAddr;                  // the address of a crowdsale currently selling this token
 
-
     // Modifiers
     modifier onlyWhenTransferEnabled() {
         if (!transferEnabled) {
@@ -39,15 +38,26 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
         _;
     }
 
+    modifier validDestination(address _to) {
+        require(_to != address(0x0));
+        require(_to != address(this) );
+        _;
+    }
+
     /**
      * Constructor - instantiates token supply and allocates balanace of
      * to the owner (msg.sender).
      */
-    function QuantstampToken() {
+    function QuantstampToken(address _admin) {
         totalSupply = INITIAL_SUPPLY;
         crowdSaleSupply = CROWDSALE_SUPPLY;
-        balances[msg.sender] = totalSupply; // owner initially has all tokens
         assert(CROWDSALE_SUPPLY <= INITIAL_SUPPLY);
+
+        // mint all tokens
+        balances[msg.sender] = totalSupply;
+        Transfer(address(0x0), msg.sender, totalSupply);
+
+        transferOwnership(_admin);
     }
 
     /**
@@ -89,7 +99,7 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
      * Overrides ERC20 transfer function with modifier that prevents the
      * ability to transfer tokens until after transfers have been enabled.
      */
-    function transfer(address _to, uint256 _value) public onlyWhenTransferEnabled returns (bool) {
+    function transfer(address _to, uint256 _value) public onlyWhenTransferEnabled validDestination(_to) returns (bool) {
         return super.transfer(_to, _value);
     }
 
@@ -97,7 +107,7 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
      * Overrides ERC20 transferFrom function with modifier that prevents the
      * ability to transfer tokens until after transfers have been enabled.
      */
-    function transferFrom(address _from, address _to, uint256 _value) public onlyWhenTransferEnabled returns (bool) {
+    function transferFrom(address _from, address _to, uint256 _value) public onlyWhenTransferEnabled validDestination(_to) returns (bool) {
         bool result = super.transferFrom(_from, _to, _value);
         if (result && msg.sender == crowdSaleAddr) {
             crowdSaleSupply.sub(_value);
@@ -111,5 +121,6 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
      */
     function burn(uint256 _value) public onlyWhenTransferEnabled {
         super.burn(_value);
+        Transfer(msg.sender, address(0x0), _value);
     }
 }
