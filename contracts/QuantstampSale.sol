@@ -118,6 +118,8 @@ contract QuantstampSale is Pausable {
 
     /**
      * The owner can update the rate (QSP to ETH).
+     *
+     * @param _rate  the new rate for converting QSP to ETH
      */
     function setRate(uint _rate) external onlyOwner {
         require(_rate >= LOW_RANGE_RATE && _rate <= HIGH_RANGE_RATE);
@@ -127,9 +129,20 @@ contract QuantstampSale is Pausable {
     /**
      * The owner can transfer the specified amount of tokens from the
      * crowdsale supply to the recipient (_to).
+     *
+     * IMPORTANT: The argument isQSP indicates the units of the amount.
+     * If set to true, then the amount is assumed to be in QSP, and
+     * this function will automatically convert it to to mini-QSP;
+     * otherwise, it is assumed that the amount is already in mini-QSP
+     * and does not require conversion.
+     *
+     * @param _to      the recipient of the tokens
+     * @param _amount  the amount to be sent
+     * @param isQSP    if true, the units of _amount are QSP; otherwise, they are mini-QSP
      */
-    function ownerTransferTokens(address _to, uint amount) external onlyOwner {
-        tokenReward.transferFrom(tokenReward.owner(), _to, amount);
+    function ownerTransferTokens(address _to, uint _amount, bool isQSP) external onlyOwner {
+        uint numTokens = isQSP ? convertToMiniQsp(_amount) : _amount;
+        tokenReward.transferFrom(tokenReward.owner(), _to, numTokens);
     }
 
     /**
@@ -194,5 +207,15 @@ contract QuantstampSale is Pausable {
                 CapReached(beneficiary, amountRaised);
             }
         }
+    }
+
+    /**
+     * Given an amount in QSP, this method returns the equivalent amount
+     * in mini-QSP.
+     *
+     * @param amount    an amount expressed in units of QSP
+     */
+    function convertToMiniQsp(uint amount) internal returns (uint) {
+        return amount * (10 ** uint(tokenReward.decimals()));
     }
 }

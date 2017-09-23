@@ -19,21 +19,24 @@ import './math/SafeMath.sol';
 contract QuantstampToken is StandardToken, BurnableToken, Ownable {
 
     // Constants
-    string public constant name = "Quantstamp Token";
-    string public constant symbol = "QSP";
-    uint8 public constant decimals = 18;
-    uint256 public constant INITIAL_SUPPLY   = 1000000000 * (10 ** uint256(decimals));
-    uint256 public constant CROWDSALE_SUPPLY =  650000000 * (10 ** uint256(decimals));
+    string  public constant name = "Quantstamp Token";
+    string  public constant symbol = "QSP";
+    uint8   public constant decimals = 18;
+    uint256 public constant INITIAL_SUPPLY      = 1000000000 * (10 ** uint256(decimals));
+    uint256 public constant CROWDSALE_ALLOWANCE =  650000000 * (10 ** uint256(decimals));
+    uint256 public constant ADMIN_ALLOWANCE     =  350000000 * (10 ** uint256(decimals));
 
     // Properties
-    uint256 public crowdSaleSupply;         // the number of tokens available for crowdsales
-    bool public transferEnabled = false;    // indicates if transferring tokens is enabled or not
-    address crowdSaleAddr;                  // the address of a crowdsale currently selling this token
+    uint256 public crowdSaleAllowance;      // the number of tokens available for crowdsales
+    uint256 public adminAllowance;          // the number of tokens available for the administrator
+    address public crowdSaleAddr;           // the address of a crowdsale currently selling this token
+    address public adminAddr;               // the address of a crowdsale currently selling this token
+    bool    public transferEnabled = false; // indicates if transferring tokens is enabled or not
 
     // Modifiers
     modifier onlyWhenTransferEnabled() {
         if (!transferEnabled) {
-            require(msg.sender == owner || msg.sender == crowdSaleAddr);
+            require(msg.sender == adminAddr || msg.sender == crowdSaleAddr);
         }
         _;
     }
@@ -50,14 +53,15 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
      */
     function QuantstampToken(address _admin) {
         totalSupply = INITIAL_SUPPLY;
-        crowdSaleSupply = CROWDSALE_SUPPLY;
-        assert(CROWDSALE_SUPPLY <= INITIAL_SUPPLY);
+        crowdSaleAllowance = CROWDSALE_ALLOWANCE;
+        adminAllowance = ADMIN_ALLOWANCE;
 
         // mint all tokens
         balances[msg.sender] = totalSupply;
         Transfer(address(0x0), msg.sender, totalSupply);
 
-        transferOwnership(_admin);
+        adminAddr = _admin;
+        approve(adminAddr, adminAllowance);
     }
 
     /**
@@ -74,10 +78,10 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
      */
     function setCrowdsale(address _crowdSaleAddr, uint256 _amountForSale) external onlyOwner {
         require(!transferEnabled);
-        require(_amountForSale <= crowdSaleSupply);
+        require(_amountForSale <= crowdSaleAllowance);
 
         // if 0, then full available crowdsale supply is assumed
-        uint amount = (_amountForSale == 0) ? crowdSaleSupply : _amountForSale;
+        uint amount = (_amountForSale == 0) ? crowdSaleAllowance : _amountForSale;
 
         // Clear allowance of old, and set allowance of new
         approve(crowdSaleAddr, 0);
@@ -93,6 +97,8 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
      */
     function enableTransfer() external onlyOwner {
         transferEnabled = true;
+        crowdSaleAllowance = 0;
+        adminAllowance = 0;
     }
 
     /**
@@ -109,15 +115,30 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
      */
     function transferFrom(address _from, address _to, uint256 _value) public onlyWhenTransferEnabled validDestination(_to) returns (bool) {
         bool result = super.transferFrom(_from, _to, _value);
-        if (result && msg.sender == crowdSaleAddr) {
-            crowdSaleSupply.sub(_value);
+        if (result) {
+            if (msg.sender == crowdSaleAddr)
+                crowdSaleAllowance = crowdSaleAllowance.sub(_value);
+            if (msg.sender == adminAddr)
+                adminAllowance = adminAllowance.sub(_value);
         }
         return result;
     }
 
     /**
+     * Overrides the transferOwnership function so that the balance of
+     * tokens of the old owner can be transferred to the new owner.
+     *
+     * @param newOwner  The new owner of the token balance
+     */
+    function transferOwnership(address newOwner) onlyOwner public {
+        super.transferOwnership(newOwner);
+    }
+
+    /**
      * Overrides the burn function so that it cannot be called until after
      * transfers have been enabled.
+     *
+     * @param _value    The amount of tokens to burn in mini-QSP
      */
     function burn(uint256 _value) public onlyWhenTransferEnabled {
         super.burn(_value);
