@@ -63,9 +63,9 @@ contract('QSP-11: Owner withdrawal', function(accounts) {
     await sale.ownerSafeWithdrawal();
 
     let afterBalance = web3.eth.getBalance(beneficiary);
-    //console.log("amountRaised  : " + amountRaised);
-    //console.log("beforeBalance : " + beforeBalance);
-    //console.log("afterBalance  : " + afterBalance);
+    console.log("amountRaised  : " + amountRaised);
+    console.log("beforeBalance : " + beforeBalance);
+    console.log("afterBalance  : " + afterBalance);
 
     // now, the beneficiary should have the funds
     assert.equal(afterBalance > beforeBalance, true);
