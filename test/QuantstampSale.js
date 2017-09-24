@@ -1,9 +1,8 @@
 
 var QuantstampSale = artifacts.require("./QuantstampSale.sol");
-var QuantstampICO = artifacts.require("./QuantstampICO.sol");
 var QuantstampToken = artifacts.require("./QuantstampToken.sol");
 
-contract('Crowdsale Allowance of Tokens', function(accounts) {
+contract('QuantstampSale constructor', function(accounts) {
   // account[0] points to the owner on the testRPC setup
   var owner = accounts[0];
   var user1 = accounts[1];

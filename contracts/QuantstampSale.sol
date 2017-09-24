@@ -94,7 +94,6 @@ contract QuantstampSale is Pausable {
         balanceOf[msg.sender] += amount;
         amountRaised += amount;
 
-<<<<<<< b5ef770e45099652a93c5b545c2b5bdd98aa89f0
         // Compute the number of tokens to be rewarded to the sender
         // Note: it's important for this calculation that both wei
         // and QSP have the same number of decimal places (18)
@@ -102,10 +101,6 @@ contract QuantstampSale is Pausable {
 
         // Transfer the tokens from the crowdsale supply to the sender
         tokenReward.transferFrom(tokenReward.owner(), msg.sender, numTokens);
-=======
-        // TODO: why is the first param tokenReward.owner()?
-        tokenReward.transferFrom(tokenReward.owner(), msg.sender, amount.mul(rate));
->>>>>>> refactoring tests
         FundTransfer(msg.sender, amount, true);
 
         // Check if the funding goal or cap have been reached
