@@ -42,60 +42,6 @@ contract('Crowdsale Allowance of Tokens', function(accounts) {
 
 });
 
-contract('Multiple Crowdsales', function(accounts) {
-  // account[0] points to the owner on the testRPC setup
-  var owner = accounts[0];
-  var user1 = accounts[1];
-  var user2 = accounts[2];
-  var user3 = accounts[3];
-
-  beforeEach(function() {
-    return QuantstampSale.deployed().then(function(instance) {
-        sale = instance;
-        return QuantstampToken.deployed();
-    }).then(function(instance2){
-      token = instance2;
-      return token.INITIAL_SUPPLY();
-    }).then(function(val){
-      initialSupply = val.toNumber();
-      return sale.rate();
-    }).then(function(val){
-      rate = val.toNumber();
-      return QuantstampICO.deployed();
-    }).then(function(instance3){
-      ico = instance3;
-      return ico.rate();
-    }).then(function(val){
-      ico_rate = val.toNumber();
-    });
-  });
-
-
-
-  it("should accept 2 ether for the crowdfunding campaign", async function() {
-      let crowdSaleAllowance = (await token.crowdSaleSupply()).toNumber();
-      await token.setCrowdsale(sale.address, crowdSaleAllowance); // ensures crowdsale has allowance of tokens
-      let tokenOwner = await token.owner();
-
-      var amountEther = 2;
-      var amountWei = web3.toWei(amountEther, "ether");
-
-      let allowance = (await token.allowance(tokenOwner, sale.address)).toNumber();
-      assert.equal(allowance, crowdSaleAllowance, "The allowance should be equal to the crowdsale allowance");
-
-      await sale.sendTransaction({from: user2,  value: web3.toWei(amountEther, "ether")});
-
-      let allowanceAfter = (await token.allowance(tokenOwner, sale.address)).toNumber();
-      let user2BalanceAfter = (await token.balanceOf(user2)).toNumber();
-      let ownerBalanceAfter = (await token.balanceOf(tokenOwner)).toNumber();
-
-      assert.equal(allowance - (amountWei * rate), ownerBalanceAfter, "The crowdsale should have sent amountWei*rate miniQSP");
-      assert.equal(user2BalanceAfter, amountWei * rate, "The user should have gained amountWei*rate miniQSP");
-      assert.equal(allowanceAfter + user2BalanceAfter, crowdSaleAllowance, "The total tokens should remain the same");
-  });
-
-});
-
 
 /*
 contract('QuantstampSale', function(accounts) {
