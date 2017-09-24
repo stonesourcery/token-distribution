@@ -43,7 +43,9 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
 
     modifier validDestination(address _to) {
         require(_to != address(0x0));
-        require(_to != address(this) );
+        require(_to != address(this));
+        require(_to != address(adminAddr));
+        require(_to != address(crowdSaleAddr));
         _;
     }
 
@@ -122,16 +124,6 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
                 adminAllowance = adminAllowance.sub(_value);
         }
         return result;
-    }
-
-    /**
-     * Overrides the transferOwnership function so that the balance of
-     * tokens of the old owner can be transferred to the new owner.
-     *
-     * @param newOwner  The new owner of the token balance
-     */
-    function transferOwnership(address newOwner) onlyOwner public {
-        super.transferOwnership(newOwner);
     }
 
     /**
