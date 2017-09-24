@@ -154,13 +154,15 @@ contract QuantstampSale is Pausable {
     function ownerSafeWithdrawal() external onlyOwner {
         require(fundingGoalReached);
         var balanceToSend = this.balance;
-        if (beneficiary.send(balanceToSend)) {
-            FundTransfer(beneficiary, balanceToSend, false);
-        } else {
-            // If we fail to send the funds to beneficiary, unlock funders balance
-            // @TODO review this; what if we run out of gas for the send above?
-            fundingGoalReached = false;
-        }
+        beneficiary.transfer(balanceToSend);
+        FundTransfer(beneficiary, balanceToSend, false);
+    }
+
+    /**
+     * The owner can unlock the fund with this function.
+     */
+    function ownerUnlockFund() external onlyOwner {
+        fundingGoalReached = false;
     }
 
     /**
@@ -173,11 +175,8 @@ contract QuantstampSale is Pausable {
             uint amount = balanceOf[msg.sender];
             balanceOf[msg.sender] = 0;
             if (amount > 0) {
-                if (msg.sender.send(amount)) {
-                    FundTransfer(msg.sender, amount, false);
-                } else {
-                    balanceOf[msg.sender] = amount;
-                }
+                msg.sender.transfer(amount);
+                FundTransfer(msg.sender, amount, false);
             }
         }
     }

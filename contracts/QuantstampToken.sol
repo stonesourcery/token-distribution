@@ -99,6 +99,8 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
      */
     function enableTransfer() external onlyOwner {
         transferEnabled = true;
+        approve(crowdSaleAddr, 0);
+        approve(adminAddr, 0);
         crowdSaleAllowance = 0;
         adminAllowance = 0;
     }
