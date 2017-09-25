@@ -126,13 +126,17 @@ contract QuantstampSale is Pausable {
         uint numTokens = amount.mul(rate);
 
         // Transfer the tokens from the crowdsale supply to the sender
-        tokenReward.transferFrom(tokenReward.owner(), msg.sender, numTokens);
-        FundTransfer(msg.sender, amount, true);
-
-        // Check if the funding goal or cap have been reached
-        // TODO check impact on gas cost
-        checkFundingGoal();
-        checkFundingCap();
+        if(tokenReward.transferFrom(tokenReward.owner(), msg.sender, numTokens)){
+            FundTransfer(msg.sender, amount, true);
+            // Check if the funding goal or cap have been reached
+            // TODO check impact on gas cost
+            checkFundingGoal();
+            checkFundingCap();
+        }
+        else{
+            throw;
+        }
+        
     }
 
     /**
@@ -172,7 +176,7 @@ contract QuantstampSale is Pausable {
      * @param amountMiniQsp the amount of tokens transferred in mini-QSP
      */
     function ownerAllocateTokens(address to, uint amountWei, uint amountMiniQsp) external onlyOwner validDestination(to) {
-        tokenReward.transferFrom(tokenReward.owner(), to, amountMiniQsp);
+        if(!tokenReward.transferFrom(tokenReward.owner(), to, amountMiniQsp)) throw;
         uint currentBalance = balanceOf[address(this)];
         balanceOf[address(this)] = currentBalance.add(amountWei);
         amountRaised = amountRaised.add(amountWei);
