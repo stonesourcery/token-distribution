@@ -4,21 +4,6 @@ var QuantstampToken = artifacts.require("./QuantstampToken.sol");
 var bigInt = require("big-integer");
 
 
-const timeTravel = function (time) {
-  return new Promise((resolve, reject) => {
-    web3.currentProvider.sendAsync({
-      jsonrpc: "2.0",
-      method: "evm_increaseTime",
-      params: [time], // 86400 is num seconds in day
-      id: new Date().getTime()
-    }, (err, result) => {
-      if(err){ return reject(err) }
-      return resolve(result)
-    });
-  })
-}
-
-
 async function logUserBalances (token, accounts) {
  console.log("")
  console.log("User Balances:")
@@ -47,10 +32,6 @@ async function logEthBalances (token, sale, accounts) {
  console.log("--------------")
  console.log("")
 }
-
-
-
-
 
 contract('Multiple Crowdsales', function(accounts) {
   // account[0] points to the owner on the testRPC setup
