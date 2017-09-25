@@ -58,6 +58,13 @@ contract QuantstampSale is Pausable {
     modifier afterDeadline()    { require (now >= endTime); _; }
     modifier saleNotClosed()    { require (!saleClosed); _; }
 
+    modifier validDestination(address _to) {
+        require(_to != address(0x0));
+        require(_to != address(this));
+        require(_to != address(tokenReward.owner()));
+        _;
+    }
+
     /**
      * Constructor for a crowdsale of QuantstampToken tokens.
      *
@@ -76,21 +83,19 @@ contract QuantstampSale is Pausable {
         uint fundingCapInEthers,
         uint minimumContributionInWei,
         uint start,
-        uint end,
+        uint durationInMinutes,
         uint rateQspToEther,
         address addressOfTokenUsedAsReward
     ) {
         require(ifSuccessfulSendTo != address(0));
         require(ifSuccessfulSendTo != address(this));
-        require(start < end);
-
         beneficiary = ifSuccessfulSendTo;
         fundingGoal = fundingGoalInEthers * 1 ether;
         fundingCap = fundingCapInEthers * 1 ether;
         minContribution = minimumContributionInWei;
-        rate = rateQspToEther; //* 1 ether;
         startTime = start;
-        endTime = end;
+        endTime = start + durationInMinutes * 1 minutes;
+        rate = rateQspToEther;
         tokenReward = QuantstampToken(addressOfTokenUsedAsReward);
     }
 
@@ -164,7 +169,7 @@ contract QuantstampSale is Pausable {
      * @param amountWei     the amount contributed in wei
      * @param amountMiniQsp the amount of tokens transferred in mini-QSP
      */
-    function ownerAllocateTokens(address to, uint amountWei, uint amountMiniQsp) external onlyOwner {
+    function ownerAllocateTokens(address to, uint amountWei, uint amountMiniQsp) external onlyOwner validDestination(to) {
         tokenReward.transferFrom(tokenReward.owner(), to, amountMiniQsp);
         uint currentBalance = balanceOf[address(this)];
         balanceOf[address(this)] = currentBalance.add(amountWei);
