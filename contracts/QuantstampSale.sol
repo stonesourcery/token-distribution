@@ -42,6 +42,16 @@ contract QuantstampSale is Pausable {
     uint public constant LOW_RANGE_RATE = 5000;
     uint public constant HIGH_RANGE_RATE = 10000;
 
+    // prevent certain functions from being recursively called
+    bool private rentrancy_lock = false;
+    modifier nonReentrant() {
+    require(!rentrancy_lock);
+    rentrancy_lock = true;
+    _;
+    rentrancy_lock = false;
+  }
+
+
     // The token being sold
     QuantstampToken public tokenReward;
 
@@ -189,7 +199,7 @@ contract QuantstampSale is Pausable {
      * the funding goal having been reached. The funds will be sent
      * to the beneficiary specified when the crowdsale was created.
      */
-    function ownerSafeWithdrawal() external onlyOwner {
+    function ownerSafeWithdrawal() external onlyOwner nonReentrant {
         require(fundingGoalReached);
         uint balanceToSend = this.balance;
         beneficiary.transfer(balanceToSend);
@@ -210,7 +220,7 @@ contract QuantstampSale is Pausable {
      * contributed if and only if the deadline has passed and the
      * funding goal was not reached.
      */
-    function safeWithdrawal() external afterDeadline {
+    function safeWithdrawal() external afterDeadline nonReentrant {
         if (!fundingGoalReached) {
             uint amount = balanceOf[msg.sender];
             balanceOf[msg.sender] = 0;
