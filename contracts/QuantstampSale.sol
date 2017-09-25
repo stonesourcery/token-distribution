@@ -19,10 +19,11 @@ contract QuantstampSale is Pausable {
     // The beneficiary is the future recipient of the funds
     address public beneficiary;
 
-    // The crowdsale has a funding goal, cap, and deadline
+    // The crowdsale has a funding goal, cap, deadline, and minimum contribution
     uint public fundingGoal;
     uint public fundingCap;
     uint public deadline;
+    uint public minContribution;
     bool public fundingGoalReached = false;
     bool public fundingCapReached = false;
     bool public saleClosed = false;
@@ -54,17 +55,19 @@ contract QuantstampSale is Pausable {
     /**
      * Constructor for a crowdsale of QuantstampToken tokens.
      *
-     * @param ifSuccessfulSendTo    the beneficiary of the fund
-     * @param fundingGoalInEthers   the minimum goal to be reached
-     * @param fundingCapInEthers    the cap (maximum) size of the fund
-     * @param durationInMinutes     the duration of the crowdsale in minutes
-     * @param rateQspToEther        the conversion rate from QSP to Ether
-     * @param addressOfTokenUsedAsReward address of the token being sold
+     * @param ifSuccessfulSendTo            the beneficiary of the fund
+     * @param fundingGoalInEthers           the minimum goal to be reached
+     * @param fundingCapInEthers            the cap (maximum) size of the fund
+     * @param minimumContributionInWei      minimum contribution (in wei)
+     * @param durationInMinutes             the duration of the crowdsale in minutes
+     * @param rateQspToEther                the conversion rate from QSP to Ether
+     * @param addressOfTokenUsedAsReward    address of the token being sold
      */
     function QuantstampSale(
         address ifSuccessfulSendTo,
         uint fundingGoalInEthers,
         uint fundingCapInEthers,
+        uint minimumContributionInWei,
         uint durationInMinutes,
         uint rateQspToEther,
         address addressOfTokenUsedAsReward
@@ -74,6 +77,7 @@ contract QuantstampSale is Pausable {
         fundingGoal = fundingGoalInEthers * 1 ether;
         fundingCap = fundingCapInEthers * 1 ether;
         deadline = now + durationInMinutes * 1 minutes;
+        minContribution = minimumContributionInWei;
         rate = rateQspToEther; //* 1 ether;
         tokenReward = QuantstampToken(addressOfTokenUsedAsReward);
     }
@@ -89,6 +93,8 @@ contract QuantstampSale is Pausable {
      * number of tokens are sent according to the current rate.
      */
     function () payable whenNotPaused beforeDeadline saleNotClosed {
+        require(msg.value >= minContribution);
+
         // Update the sender's balance of wei contributed and the amount raised
         uint amount = msg.value;
         balanceOf[msg.sender] += amount;
