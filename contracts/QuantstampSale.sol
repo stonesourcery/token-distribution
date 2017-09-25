@@ -54,8 +54,8 @@ contract QuantstampSale is Pausable {
     event FundTransfer(address _backer, uint _amount, bool _isContribution);
 
     // Modifiers
-    modifier beforeDeadline()   { require (currentTime() < deadline); _; }
-    modifier afterDeadline()    { require (currentTime() >= deadline); _; }
+    modifier beforeDeadline()   { require (currentTime() < endTime); _; }
+    modifier afterDeadline()    { require (currentTime() >= endTime); _; }
     modifier saleNotClosed()    { require (!saleClosed); _; }
 
     modifier validDestination(address _to) {
@@ -244,7 +244,6 @@ contract QuantstampSale is Pausable {
             }
         }
     }
-
 
     /**
      * Returns the current time.

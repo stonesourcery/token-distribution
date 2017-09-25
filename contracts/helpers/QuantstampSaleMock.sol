@@ -18,11 +18,14 @@ contract QuantstampSaleMock is QuantstampSale {
         address ifSuccessfulSendTo,
         uint fundingGoalInEthers,
         uint fundingCapInEthers,
+        uint minimumContributionInWei,
+        uint start,
         uint durationInMinutes,
         uint rateQspToEther,
         address addressOfTokenUsedAsReward
-    ) QuantstampSale(ifSuccessfulSendTo, fundingGoalInEthers, fundingCapInEthers, 
-                     durationInMinutes, rateQspToEther, addressOfTokenUsedAsReward){ }
+    ) QuantstampSale(ifSuccessfulSendTo, fundingGoalInEthers, fundingCapInEthers,
+                     minimumContributionInWei, start, durationInMinutes, rateQspToEther,
+                     addressOfTokenUsedAsReward){ }
 
     function currentTime() returns (uint _currentTime) {
         return _now;
