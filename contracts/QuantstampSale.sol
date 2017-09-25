@@ -22,14 +22,20 @@ contract QuantstampSale is Pausable {
     // The crowdsale has a funding goal, cap, deadline, and minimum contribution
     uint public fundingGoal;
     uint public fundingCap;
-    uint public deadline;
     uint public minContribution;
     bool public fundingGoalReached = false;
     bool public fundingCapReached = false;
     bool public saleClosed = false;
 
+    // Time period of sale (UNIX timestamps)
+    uint public startTime;
+    uint public endTime;
+
     // Keeps track of the amount of wei raised
     uint public amountRaised;
+
+    // Refund amount, should it be required
+    uint public refundAmount;
 
     // The ratio of QSP to Ether
     uint public rate;
@@ -48,8 +54,8 @@ contract QuantstampSale is Pausable {
     event FundTransfer(address _backer, uint _amount, bool _isContribution);
 
     // Modifiers
-    modifier beforeDeadline()   { require (now < deadline); _; }
-    modifier afterDeadline()    { require (now >= deadline); _; }
+    modifier beforeDeadline()   { require (now < endTime); _; }
+    modifier afterDeadline()    { require (now >= endTime); _; }
     modifier saleNotClosed()    { require (!saleClosed); _; }
 
     /**
@@ -59,7 +65,8 @@ contract QuantstampSale is Pausable {
      * @param fundingGoalInEthers           the minimum goal to be reached
      * @param fundingCapInEthers            the cap (maximum) size of the fund
      * @param minimumContributionInWei      minimum contribution (in wei)
-     * @param durationInMinutes             the duration of the crowdsale in minutes
+     * @param start                 the start time (UNIX timestamp)
+     * @param end                   the end time (UNIX timestamp)
      * @param rateQspToEther                the conversion rate from QSP to Ether
      * @param addressOfTokenUsedAsReward    address of the token being sold
      */
@@ -68,17 +75,22 @@ contract QuantstampSale is Pausable {
         uint fundingGoalInEthers,
         uint fundingCapInEthers,
         uint minimumContributionInWei,
-        uint durationInMinutes,
+        uint start,
+        uint end,
         uint rateQspToEther,
         address addressOfTokenUsedAsReward
     ) {
         require(ifSuccessfulSendTo != address(0));
+        require(ifSuccessfulSendTo != address(this));
+        require(start < end);
+
         beneficiary = ifSuccessfulSendTo;
         fundingGoal = fundingGoalInEthers * 1 ether;
         fundingCap = fundingCapInEthers * 1 ether;
-        deadline = now + durationInMinutes * 1 minutes;
         minContribution = minimumContributionInWei;
         rate = rateQspToEther; //* 1 ether;
+        startTime = start;
+        endTime = end;
         tokenReward = QuantstampToken(addressOfTokenUsedAsReward);
     }
 
@@ -97,8 +109,9 @@ contract QuantstampSale is Pausable {
 
         // Update the sender's balance of wei contributed and the amount raised
         uint amount = msg.value;
-        balanceOf[msg.sender] += amount;
-        amountRaised += amount;
+        uint currentBalance = balanceOf[msg.sender];
+        balanceOf[msg.sender] = currentBalance.add(amount);
+        amountRaised = amountRaised.add(amount);
 
         // Compute the number of tokens to be rewarded to the sender
         // Note: it's important for this calculation that both wei
@@ -133,22 +146,30 @@ contract QuantstampSale is Pausable {
     }
 
     /**
-     * The owner can transfer the specified amount of tokens from the
-     * crowdsale supply to the recipient (_to).
-     *
-     * IMPORTANT: The argument isQSP indicates the units of the amount.
-     * If set to true, then the amount is assumed to be in QSP, and
-     * this function will automatically convert it to to mini-QSP;
-     * otherwise, it is assumed that the amount is already in mini-QSP
-     * and does not require conversion.
-     *
-     * @param _to      the recipient of the tokens
-     * @param _amount  the amount to be sent
-     * @param isQSP    if true, the units of _amount are QSP; otherwise, they are mini-QSP
+     * Set the end time of the crowdsale.
      */
-    function ownerTransferTokens(address _to, uint _amount, bool isQSP) external onlyOwner {
-        uint numTokens = isQSP ? convertToMiniQsp(_amount) : _amount;
-        tokenReward.transferFrom(tokenReward.owner(), _to, numTokens);
+    function setEnd(uint _end) external onlyOwner {
+        require(now <= _end);
+        endTime = _end;
+    }
+
+    /**
+     * The owner can allocate the specified amount of tokens from the
+     * crowdsale allowance to the recipient (_to).
+     *
+     * NOTE: be extremely careful to get the amounts correct, which
+     * are in units of wei and mini-QSP. Every digit counts.
+     *
+     * @param to            the recipient of the tokens
+     * @param amountWei     the amount contributed in wei
+     * @param amountMiniQsp the amount of tokens transferred in mini-QSP
+     */
+    function ownerAllocateTokens(address to, uint amountWei, uint amountMiniQsp) external onlyOwner {
+        tokenReward.transferFrom(tokenReward.owner(), to, amountMiniQsp);
+        uint currentBalance = balanceOf[address(this)];
+        balanceOf[address(this)] = currentBalance.add(amountWei);
+        amountRaised = amountRaised.add(amountWei);
+        FundTransfer(msg.sender, amountWei, true);
     }
 
     /**
@@ -165,9 +186,11 @@ contract QuantstampSale is Pausable {
     }
 
     /**
-     * The owner can unlock the fund with this function.
+     * The owner can unlock the fund with this function. The use-
+     * case for this is when the owner decides after the deadline
+     * to allow contributors to be refunded their contributions.
      */
-    function ownerUnlockFund() external onlyOwner {
+    function ownerUnlockFund() external afterDeadline onlyOwner {
         fundingGoalReached = false;
     }
 
@@ -183,6 +206,7 @@ contract QuantstampSale is Pausable {
             if (amount > 0) {
                 msg.sender.transfer(amount);
                 FundTransfer(msg.sender, amount, false);
+                refundAmount = refundAmount.add(amount);
             }
         }
     }
