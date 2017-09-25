@@ -121,7 +121,7 @@ contract QuantstampSale is Pausable {
      * tokens are transferred to the sender, and that the correct
      * number of tokens are sent according to the current rate.
      */
-    function () payable whenNotPaused beforeDeadline saleNotClosed {
+    function () payable whenNotPaused beforeDeadline saleNotClosed nonReentrant {
         require(msg.value >= minContribution);
 
         // Update the sender's balance of wei contributed and the amount raised
@@ -185,7 +185,7 @@ contract QuantstampSale is Pausable {
      * @param amountWei     the amount contributed in wei
      * @param amountMiniQsp the amount of tokens transferred in mini-QSP
      */
-    function ownerAllocateTokens(address to, uint amountWei, uint amountMiniQsp) external onlyOwner validDestination(to) {
+    function ownerAllocateTokens(address to, uint amountWei, uint amountMiniQsp) external onlyOwner nonReentrant validDestination(to) {
         if(!tokenReward.transferFrom(tokenReward.owner(), to, amountMiniQsp)) throw;
         uint currentBalance = balanceOf[address(this)];
         balanceOf[address(this)] = currentBalance.add(amountWei);
