@@ -187,7 +187,7 @@ contract QuantstampSale is Pausable {
      */
     function ownerSafeWithdrawal() external onlyOwner {
         require(fundingGoalReached);
-        var balanceToSend = this.balance;
+        uint balanceToSend = this.balance;
         beneficiary.transfer(balanceToSend);
         FundTransfer(beneficiary, balanceToSend, false);
     }
