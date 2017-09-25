@@ -2,12 +2,64 @@ var QuantstampSale = artifacts.require("./QuantstampSale.sol");
 var QuantstampICO = artifacts.require("./QuantstampICO.sol");
 var QuantstampToken = artifacts.require("./QuantstampToken.sol");
 
+var bigInt = require("big-integer");
+
+
+async function logMyContract (myContract) {
+ console.log("")
+ console.log("MyContract:")
+ console.log("--------------")
+ console.log(`BALANCE: ${getBalanceInEth(myContract.address)}`)
+ console.log(`startTime=${await myContract.startTime.call()}`)
+ console.log(`poolTime=${await myContract.poolTime.call()}`)
+ console.log(`threshold=${await myContract.threshold.call()}`)
+ console.log(`recipient=${await myContract.recipient.call()}`)
+ console.log(`currentTime()=${await myContract.currentTime.call()}`)
+ console.log(`isClosed()=${await myContract.isClosed.call()}`)
+ console.log("")
+}
+
+async function logUserBalances (token, accounts) {
+ console.log("")
+ console.log("User Balances:")
+ console.log("--------------")
+ console.log(`Owner: ${(await token.balanceOf(accounts[0])).toNumber()}`)
+ console.log(`User1: ${(await token.balanceOf(accounts[1])).toNumber()}`)
+ console.log(`User2: ${(await token.balanceOf(accounts[2])).toNumber()}`)
+ console.log(`User3: ${(await token.balanceOf(accounts[3])).toNumber()}`)
+
+ console.log("--------------")
+ console.log("")
+}
+
+async function logEthBalances (token, sale, accounts) {
+ console.log("")
+ console.log("Eth Balances:")
+ console.log("-------------")
+ console.log(`Owner: ${(await web3.eth.getBalance(accounts[0])).toNumber()}`)
+ console.log(`User1: ${(await web3.eth.getBalance(accounts[1])).toNumber()}`)
+ console.log(`User2: ${(await web3.eth.getBalance(accounts[2])).toNumber()}`)
+ console.log(`User3: ${(await web3.eth.getBalance(accounts[3])).toNumber()}`)
+ console.log(`Sale : ${(await web3.eth.getBalance(sale.address)).toNumber()}`)
+ console.log(`Token: ${(await web3.eth.getBalance(token.address)).toNumber()}`)
+
+
+ console.log("--------------")
+ console.log("")
+}
+
+
+
+
+
 contract('Multiple Crowdsales', function(accounts) {
   // account[0] points to the owner on the testRPC setup
   var owner = accounts[0];
   var user1 = accounts[1];
   var user2 = accounts[2];
   var user3 = accounts[3];
+
+  var sale2;
 
   beforeEach(function() {
     return QuantstampSale.deployed().then(function(instance) {
@@ -21,18 +73,18 @@ contract('Multiple Crowdsales', function(accounts) {
       return sale.rate();
     }).then(function(val){
       rate = val.toNumber();
-      return QuantstampICO.deployed();
-    }).then(function(instance3){
-      ico = instance3;
-      return ico.rate();
+      return token.owner();
+    }).then(function(owner){
+      tokenOwner = owner;
+      return token.CROWDSALE_ALLOWANCE();
     }).then(function(val){
-      ico_rate = val.toNumber();
+      crowdsaleSupply = val.toNumber();
     });
   });
 
-  it("should accept 2 ether for the crowdfunding campaign", async function() {
-      await token.setCrowdsale(sale.address); // ensures crowdsale has allowance of tokens
-      let tokenOwner = await token.owner();
+  it("should accept 2 ether for the crowdsale", async function() {
+      // 0 indicates all crowdsale tokens
+      await token.setCrowdsale(sale.address, 0); // ensures crowdsale has allowance of tokens
 
       var amountEther = 2;
       var amountWei = web3.toWei(amountEther, "ether");
@@ -42,111 +94,85 @@ contract('Multiple Crowdsales', function(accounts) {
       await sale.sendTransaction({from: user2,  value: web3.toWei(amountEther, "ether")});
 
       let allowanceAfter = (await token.allowance(tokenOwner, sale.address)).toNumber();
-
       let user2BalanceAfter = (await token.balanceOf(user2)).toNumber();
-      let ownerBalanceAfter = (await token.balanceOf(tokenOwner)).toNumber();
+      let ownerBalanceAfter = (await token.balanceOf(owner)).toNumber();
 
-      console.log("allowance: " + allowance);
-      console.log("ownerBalanceAfter: " + ownerBalanceAfter);
-      console.log("allowanceAfter: " + allowanceAfter);
-
-      assert.equal(allowance - (amountWei * rate), ownerBalanceAfter, "The crowdsale should have sent amountWei*rate miniQSP");
+      assert.equal(allowance - (amountWei * rate), allowanceAfter, "The crowdsale should have sent amountWei*rate miniQSP");
       assert.equal(user2BalanceAfter, amountWei * rate, "The user should have gained amountWei*rate miniQSP");
-      assert.equal(allowanceAfter + user2BalanceAfter, initialSupply, "The total tokens should remain the same");
+      assert.equal(allowanceAfter + user2BalanceAfter, allowance, "The total tokens should remain the same");
   });
 
   it("should accept another 10 ether, reaching the goal", async function() {
-      let tokenOwner = await token.owner();
-
       var amountEther = 10;
       var amountWei = web3.toWei(amountEther, "ether");
 
       let allowance = (await token.allowance(tokenOwner, sale.address)).toNumber();
 
-      console.log("10ethertest, allowanceBefore: " + allowance);
-
       await sale.sendTransaction({from: user2,  value: web3.toWei(amountEther, "ether")});
 
       let allowanceAfter = (await token.allowance(tokenOwner, sale.address)).toNumber();
-
       let user2BalanceAfter = (await token.balanceOf(user2)).toNumber();
       let ownerBalanceAfter = (await token.balanceOf(tokenOwner)).toNumber();
 
-      console.log("10ethertest, ownerBalanceAfter: " + ownerBalanceAfter);
-      console.log("10ethertest, allowance: " + allowance);
-
-      assert.equal(allowance - web3.toWei(10, "ether"), ownerBalanceAfter, "The crowdsale should have sent amountWei*rate miniQSP");
+      assert.equal(allowance - (amountWei * rate), allowanceAfter, "The crowdsale should have sent amountWei*rate miniQSP");
       assert.equal(user2BalanceAfter, web3.toWei(12, "ether") * rate, "The user should have gained amountWei*rate miniQSP");
-      assert.equal(allowanceAfter + user2BalanceAfter, initialSupply, "The total tokens should remain the same");
-  });
-/*
-  it("should transfer tokens back to the owner of the token", async function() {
-      let tokenOwner = await token.owner();
-
-      let saleBalance = (await token.balanceOf(tokenOwner)).toNumber();
-
-      let tokenOwnerBalance = await token.balanceOf(tokenOwner);
-      tokenOwnerBalance = tokenOwnerBalance.toNumber();
-      
-      console.log(tokenOwner);
-      console.log(saleBalance);
-      console.log(tokenOwnerBalance);
-
-      await sale.testTransferTokens(tokenOwner, saleBalance);
-
-      console.log("asdf");
-
-      let saleBalanceAfter = await token.balanceOf(sale.address);
-      saleBalanceAfter = saleBalanceAfter.toNumber();
-
-      let tokenOwnerBalanceAfter = await token.balanceOf(tokenOwner);
-      tokenOwnerBalanceAfter = tokenOwnerBalanceAfter.toNumber();
-
-      console.log(saleBalanceAfter  + "  " + tokenOwnerBalanceAfter);
-
-      assert.equal(saleBalanceAfter, 0, "The crowdsale no longer has tokens associated with it");
-      assert.equal(tokenOwnerBalanceAfter, tokenOwnerBalance + saleBalance, "All crowdsale tokens now belong to the token owner");
+      assert.equal(allowanceAfter + user2BalanceAfter, crowdsaleSupply, "The total tokens should remain the same");
   });
 
-  it("the owner of QuantstampToken should now send funds to the ICO", async function() {
-      let ownerBalance = await token.balanceOf(owner);
-      ownerBalance = ownerBalance.toNumber();
+  it("should transfer the ether balance of the sale crowdsale back to the owner", async function() {
+      let saleEthBalance = (await web3.eth.getBalance(sale.address)).toNumber();
+      let ownerEthBalance = (await web3.eth.getBalance(owner)).toNumber();
 
-      await token.transferTokens(ico.address);
-      let ownerBalanceAfter = await token.balanceOf(owner);
-      let tokenBalance = await token.balanceOf(token.address);
-      let icoBalance  = await token.balanceOf(ico.address);
+      await sale.ownerSafeWithdrawal();
 
-      ownerBalanceAfter = ownerBalanceAfter.toNumber();
-      tokenBalance = tokenBalance.toNumber();
-      icoBalance  = icoBalance.toNumber();
+      let saleBalanceAfter = (await web3.eth.getBalance(sale.address)).toNumber();
+      let ownerBalanceAfter = (await web3.eth.getBalance(owner)).toNumber();
 
-      assert.equal(ownerBalanceAfter, 0, "The owner should not have any tokens after transferring");
-      assert.equal(tokenBalance, 0, "The Token should not have any tokens allocated to its address");
-      assert.equal(icoBalance, ownerBalance, "The crowdsale should have all the tokens from owner");
+      assert.equal(saleBalanceAfter, 0, "The crowdsale should no longer have ether associated with it");
+      assert.isAbove(ownerBalanceAfter, ownerEthBalance, "The owner should have gained that amount of ether (minus a bit for gas)");
   });
 
-  it("should accept 2 ether for the ICO", async function() {
+  it("the owner of QuantstampToken should now issue allowance to a new crowdsale", async function() {
+      sale2 = await QuantstampSale.new(accounts[0], 10, 20, 60, 50, token.address);
+      await token.setCrowdsale(sale2.address, 0); // ensures crowdsale has allowance of tokens
+
+      let saleAllowance = (await token.allowance(tokenOwner, sale.address)).toNumber();
+      let sale2Allowance = (await token.allowance(tokenOwner, sale2.address)).toNumber();
+
+      let crowdsaleAllowance = (await token.crowdSaleAllowance()).toNumber();
+
+      assert.equal(saleAllowance, 0, "The old crowdsale should have zero allowance");
+      assert.isAbove(sale2Allowance, 0, "The new crowdsale should have an allowance greater than zero");
+      assert.equal(sale2Allowance, crowdsaleAllowance, "The new crowdsale should have a balance equal to the current allowance");
+      assert.isBelow(sale2Allowance, crowdsaleSupply, "The new crowdsale should have a balance less than the supply");
+  });
+
+  it("should accept 2 ether for the new crowdsale", async function() {
       var amountEther = 2;
       var amountWei = web3.toWei(amountEther, "ether");
 
-      let icoBalance = await token.balanceOf(ico.address);
-      icoBalance = icoBalance.toNumber();
+      let allowance = (await token.allowance(tokenOwner, sale2.address));
+      let sale2_rate = (await sale2.rate());
 
-      let user2Balance = await token.balanceOf(user2);
-      user2Balance = user2Balance.toNumber();
+      let user2Balance = (await token.balanceOf(user2)).toNumber();
 
-      await ico.sendTransaction({from: user2,  value: web3.toWei(amountEther, "ether")});
+      await sale2.sendTransaction({from: user2,  value: web3.toWei(amountEther, "ether")});
 
-      let icoBalanceAfter = await token.balanceOf(ico.address);
-      icoBalanceAfter = icoBalanceAfter.toNumber();
 
-      let user2BalanceAfter = await token.balanceOf(user2);
-      user2BalanceAfter = user2BalanceAfter.toNumber();
+      let allowanceAfter = (await token.allowance(tokenOwner, sale2.address));
+      let user2BalanceAfter = (await token.balanceOf(user2)).toNumber();
+      let ownerBalanceAfter = (await token.balanceOf(owner)).toNumber();
 
-      assert.equal(icoBalance - (amountWei * ico_rate), icoBalanceAfter, "The crowdsale should have sent amountWei*rate miniQSP");
-      assert.equal(user2BalanceAfter, user2Balance + amountWei * ico_rate, "The user should have gained amountWei*rate miniQSP");
+      let weiTransferred = (amountWei * sale2_rate);
+
+      console.log(amountWei + " " + sale2_rate + " " + (amountWei * sale2_rate));
+      console.log(allowanceAfter + " " + user2BalanceAfter + " " + allowance);
+
+      let sum = bigInt(allowanceAfter).add(weiTransferred);
+
+      //assert.equal(allowance - diff, allowanceAfter, "The crowdsale should have sent amountWei*rate miniQSP");
+      assert.equal(user2BalanceAfter, user2Balance + (amountWei * sale2_rate), "The user should have gained amountWei*rate miniQSP");
+      assert.equal(sum.toNumber(), allowance, "The total tokens should remain the same");
   });
 
-*/
 });
