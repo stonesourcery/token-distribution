@@ -32,5 +32,5 @@ module.exports = function(deployer, network, accounts) {
     deployer.link(QuantstampToken, SafeMath);
 
     deployer.deploy(QuantstampToken, accounts[1]);
-    deployer.deploy(QuantstampSale, accounts[1], 10, 20, 0, 1, 5000, QuantstampToken.address);
+    deployer.deploy(QuantstampSale, accounts[1], 10, 20, 1, 0, 1, 5000, QuantstampToken.address);
 };

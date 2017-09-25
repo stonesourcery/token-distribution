@@ -72,8 +72,8 @@ contract QuantstampSale is Pausable {
      * @param fundingGoalInEthers           the minimum goal to be reached
      * @param fundingCapInEthers            the cap (maximum) size of the fund
      * @param minimumContributionInWei      minimum contribution (in wei)
-     * @param start                 the start time (UNIX timestamp)
-     * @param end                   the end time (UNIX timestamp)
+     * @param start                         the start time (UNIX timestamp)
+     * @param durationInMinutes             the duration of the crowdsale in minutes
      * @param rateQspToEther                the conversion rate from QSP to Ether
      * @param addressOfTokenUsedAsReward    address of the token being sold
      */
@@ -87,15 +87,17 @@ contract QuantstampSale is Pausable {
         uint rateQspToEther,
         address addressOfTokenUsedAsReward
     ) {
-        require(ifSuccessfulSendTo != address(0));
-        require(ifSuccessfulSendTo != address(this));
+        require(ifSuccessfulSendTo != address(0) && ifSuccessfulSendTo != address(this));
+        require(addressOfTokenUsedAsReward != address(0) && addressOfTokenUsedAsReward != address(this));
+        require(fundingGoalInEthers <= fundingCapInEthers);
+        require(durationInMinutes > 0);
         beneficiary = ifSuccessfulSendTo;
         fundingGoal = fundingGoalInEthers * 1 ether;
         fundingCap = fundingCapInEthers * 1 ether;
         minContribution = minimumContributionInWei;
         startTime = start;
         endTime = start + durationInMinutes * 1 minutes;
-        rate = rateQspToEther;
+        setRate(rateQspToEther);
         tokenReward = QuantstampToken(addressOfTokenUsedAsReward);
     }
 
@@ -145,7 +147,7 @@ contract QuantstampSale is Pausable {
      *
      * @param _rate  the new rate for converting QSP to ETH
      */
-    function setRate(uint _rate) external onlyOwner {
+    function setRate(uint _rate) public onlyOwner {
         require(_rate >= LOW_RANGE_RATE && _rate <= HIGH_RANGE_RATE);
         rate = _rate;
     }
@@ -249,7 +251,7 @@ contract QuantstampSale is Pausable {
      *
      * @param amount    an amount expressed in units of QSP
      */
-    function convertToMiniQsp(uint amount) internal returns (uint) {
+    function convertToMiniQsp(uint amount) internal constant returns (uint) {
         return amount * (10 ** uint(tokenReward.decimals()));
     }
 }
