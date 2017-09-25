@@ -36,7 +36,7 @@ async function logEthBalances (token, sale, accounts) {
 contract('Multiple Crowdsales', function(accounts) {
   // account[0] points to the owner on the testRPC setup
   var owner = accounts[0];
-  var user1 = accounts[1];
+  var beneficiary = accounts[1];
   var user2 = accounts[2];
   var user3 = accounts[3];
 
@@ -102,19 +102,20 @@ contract('Multiple Crowdsales', function(accounts) {
 
   it("should transfer the ether balance of the sale crowdsale back to the owner", async function() {
       let saleEthBalance = (await web3.eth.getBalance(sale.address)).toNumber();
-      let ownerEthBalance = (await web3.eth.getBalance(owner)).toNumber();
+      let beneficiaryEthBalance = (await web3.eth.getBalance(beneficiary)).toNumber();
 
       await sale.ownerSafeWithdrawal();
 
       let saleBalanceAfter = (await web3.eth.getBalance(sale.address)).toNumber();
-      let ownerBalanceAfter = (await web3.eth.getBalance(owner)).toNumber();
+      let beneficiaryBalanceAfter = (await web3.eth.getBalance(beneficiary)).toNumber();
 
       assert.equal(saleBalanceAfter, 0, "The crowdsale should no longer have ether associated with it");
-      assert.isAbove(ownerBalanceAfter, ownerEthBalance, "The owner should have gained that amount of ether (minus a bit for gas)");
+      assert.equal(beneficiaryEthBalance + saleEthBalance, beneficiaryBalanceAfter, "The beneficiary should have gained that amount of ether");
   });
 
   it("the owner of QuantstampToken should now issue allowance to a new crowdsale", async function() {
-      sale2 = await QuantstampSale.new(accounts[0], 10, 20, 60, 50, token.address);
+      let time = new Date().getTime() / 1000;
+      sale2 = await QuantstampSale.new(accounts[1], 10, 20, 1, time, 2, 5000, token.address);
       await token.setCrowdsale(sale2.address, 0); // ensures crowdsale has allowance of tokens
 
       let saleAllowance = (await token.allowance(tokenOwner, sale.address)).toNumber();
