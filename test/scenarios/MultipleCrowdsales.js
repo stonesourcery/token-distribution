@@ -1,23 +1,23 @@
 var QuantstampSale = artifacts.require("./QuantstampSale.sol");
-var QuantstampICO = artifacts.require("./QuantstampICO.sol");
 var QuantstampToken = artifacts.require("./QuantstampToken.sol");
 
 var bigInt = require("big-integer");
 
 
-async function logMyContract (myContract) {
- console.log("")
- console.log("MyContract:")
- console.log("--------------")
- console.log(`BALANCE: ${getBalanceInEth(myContract.address)}`)
- console.log(`startTime=${await myContract.startTime.call()}`)
- console.log(`poolTime=${await myContract.poolTime.call()}`)
- console.log(`threshold=${await myContract.threshold.call()}`)
- console.log(`recipient=${await myContract.recipient.call()}`)
- console.log(`currentTime()=${await myContract.currentTime.call()}`)
- console.log(`isClosed()=${await myContract.isClosed.call()}`)
- console.log("")
+const timeTravel = function (time) {
+  return new Promise((resolve, reject) => {
+    web3.currentProvider.sendAsync({
+      jsonrpc: "2.0",
+      method: "evm_increaseTime",
+      params: [time], // 86400 is num seconds in day
+      id: new Date().getTime()
+    }, (err, result) => {
+      if(err){ return reject(err) }
+      return resolve(result)
+    });
+  })
 }
+
 
 async function logUserBalances (token, accounts) {
  console.log("")
@@ -164,9 +164,6 @@ contract('Multiple Crowdsales', function(accounts) {
       let ownerBalanceAfter = (await token.balanceOf(owner)).toNumber();
 
       let weiTransferred = (amountWei * sale2_rate);
-
-      console.log(amountWei + " " + sale2_rate + " " + (amountWei * sale2_rate));
-      console.log(allowanceAfter + " " + user2BalanceAfter + " " + allowance);
 
       let sum = bigInt(allowanceAfter).add(weiTransferred);
 

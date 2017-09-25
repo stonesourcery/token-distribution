@@ -47,8 +47,8 @@ contract QuantstampSale is Pausable {
     event FundTransfer(address _backer, uint _amount, bool _isContribution);
 
     // Modifiers
-    modifier beforeDeadline()   { require (now < deadline); _; }
-    modifier afterDeadline()    { require (now >= deadline); _; }
+    modifier beforeDeadline()   { require (currentTime() < deadline); _; }
+    modifier afterDeadline()    { require (currentTime() >= deadline); _; }
     modifier saleNotClosed()    { require (!saleClosed); _; }
 
     /**
@@ -73,7 +73,7 @@ contract QuantstampSale is Pausable {
         beneficiary = ifSuccessfulSendTo;
         fundingGoal = fundingGoalInEthers * 1 ether;
         fundingCap = fundingCapInEthers * 1 ether;
-        deadline = now + durationInMinutes * 1 minutes;
+        deadline = currentTime() + durationInMinutes * 1 minutes;
         rate = rateQspToEther; //* 1 ether;
         tokenReward = QuantstampToken(addressOfTokenUsedAsReward);
     }
@@ -207,6 +207,16 @@ contract QuantstampSale is Pausable {
             }
         }
     }
+
+
+    /**
+     * Returns the current time. 
+     * Useful to abstract calls to "now" for tests.
+    */
+    function currentTime() returns (uint _currentTime) {
+        return now;
+    }
+
 
     /**
      * Given an amount in QSP, this method returns the equivalent amount
