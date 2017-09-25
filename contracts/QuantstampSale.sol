@@ -19,16 +19,23 @@ contract QuantstampSale is Pausable {
     // The beneficiary is the future recipient of the funds
     address public beneficiary;
 
-    // The crowdsale has a funding goal, cap, and deadline
+    // The crowdsale has a funding goal, cap, deadline, and minimum contribution
     uint public fundingGoal;
     uint public fundingCap;
-    uint public deadline;
+    uint public minContribution;
     bool public fundingGoalReached = false;
     bool public fundingCapReached = false;
     bool public saleClosed = false;
 
+    // Time period of sale (UNIX timestamps)
+    uint public startTime;
+    uint public endTime;
+
     // Keeps track of the amount of wei raised
     uint public amountRaised;
+
+    // Refund amount, should it be required
+    uint public refundAmount;
 
     // The ratio of QSP to Ether
     uint public rate;
@@ -51,30 +58,46 @@ contract QuantstampSale is Pausable {
     modifier afterDeadline()    { require (currentTime() >= deadline); _; }
     modifier saleNotClosed()    { require (!saleClosed); _; }
 
+    modifier validDestination(address _to) {
+        require(_to != address(0x0));
+        require(_to != address(this));
+        require(_to != address(tokenReward.owner()));
+        _;
+    }
+
     /**
      * Constructor for a crowdsale of QuantstampToken tokens.
      *
-     * @param ifSuccessfulSendTo    the beneficiary of the fund
-     * @param fundingGoalInEthers   the minimum goal to be reached
-     * @param fundingCapInEthers    the cap (maximum) size of the fund
-     * @param durationInMinutes     the duration of the crowdsale in minutes
-     * @param rateQspToEther        the conversion rate from QSP to Ether
-     * @param addressOfTokenUsedAsReward address of the token being sold
+     * @param ifSuccessfulSendTo            the beneficiary of the fund
+     * @param fundingGoalInEthers           the minimum goal to be reached
+     * @param fundingCapInEthers            the cap (maximum) size of the fund
+     * @param minimumContributionInWei      minimum contribution (in wei)
+     * @param start                         the start time (UNIX timestamp)
+     * @param durationInMinutes             the duration of the crowdsale in minutes
+     * @param rateQspToEther                the conversion rate from QSP to Ether
+     * @param addressOfTokenUsedAsReward    address of the token being sold
      */
     function QuantstampSale(
         address ifSuccessfulSendTo,
         uint fundingGoalInEthers,
         uint fundingCapInEthers,
+        uint minimumContributionInWei,
+        uint start,
         uint durationInMinutes,
         uint rateQspToEther,
         address addressOfTokenUsedAsReward
     ) {
-        require(ifSuccessfulSendTo != address(0));
+        require(ifSuccessfulSendTo != address(0) && ifSuccessfulSendTo != address(this));
+        require(addressOfTokenUsedAsReward != address(0) && addressOfTokenUsedAsReward != address(this));
+        require(fundingGoalInEthers <= fundingCapInEthers);
+        require(durationInMinutes > 0);
         beneficiary = ifSuccessfulSendTo;
         fundingGoal = fundingGoalInEthers * 1 ether;
         fundingCap = fundingCapInEthers * 1 ether;
-        deadline = currentTime() + durationInMinutes * 1 minutes;
-        rate = rateQspToEther; //* 1 ether;
+        minContribution = minimumContributionInWei;
+        startTime = start;
+        endTime = start + durationInMinutes * 1 minutes; // TODO double check
+        setRate(rateQspToEther);
         tokenReward = QuantstampToken(addressOfTokenUsedAsReward);
     }
 
@@ -89,10 +112,13 @@ contract QuantstampSale is Pausable {
      * number of tokens are sent according to the current rate.
      */
     function () payable whenNotPaused beforeDeadline saleNotClosed {
+        require(msg.value >= minContribution);
+
         // Update the sender's balance of wei contributed and the amount raised
         uint amount = msg.value;
-        balanceOf[msg.sender] += amount;
-        amountRaised += amount;
+        uint currentBalance = balanceOf[msg.sender];
+        balanceOf[msg.sender] = currentBalance.add(amount);
+        amountRaised = amountRaised.add(amount);
 
         // Compute the number of tokens to be rewarded to the sender
         // Note: it's important for this calculation that both wei
@@ -121,28 +147,36 @@ contract QuantstampSale is Pausable {
      *
      * @param _rate  the new rate for converting QSP to ETH
      */
-    function setRate(uint _rate) external onlyOwner {
+    function setRate(uint _rate) public onlyOwner {
         require(_rate >= LOW_RANGE_RATE && _rate <= HIGH_RANGE_RATE);
         rate = _rate;
     }
 
     /**
-     * The owner can transfer the specified amount of tokens from the
-     * crowdsale supply to the recipient (_to).
-     *
-     * IMPORTANT: The argument isQSP indicates the units of the amount.
-     * If set to true, then the amount is assumed to be in QSP, and
-     * this function will automatically convert it to to mini-QSP;
-     * otherwise, it is assumed that the amount is already in mini-QSP
-     * and does not require conversion.
-     *
-     * @param _to      the recipient of the tokens
-     * @param _amount  the amount to be sent
-     * @param isQSP    if true, the units of _amount are QSP; otherwise, they are mini-QSP
+     * Set the end time of the crowdsale.
      */
-    function ownerTransferTokens(address _to, uint _amount, bool isQSP) external onlyOwner {
-        uint numTokens = isQSP ? convertToMiniQsp(_amount) : _amount;
-        tokenReward.transferFrom(tokenReward.owner(), _to, numTokens);
+    function setEnd(uint _end) external onlyOwner {
+        require(now <= _end);
+        endTime = _end;
+    }
+
+    /**
+     * The owner can allocate the specified amount of tokens from the
+     * crowdsale allowance to the recipient (_to).
+     *
+     * NOTE: be extremely careful to get the amounts correct, which
+     * are in units of wei and mini-QSP. Every digit counts.
+     *
+     * @param to            the recipient of the tokens
+     * @param amountWei     the amount contributed in wei
+     * @param amountMiniQsp the amount of tokens transferred in mini-QSP
+     */
+    function ownerAllocateTokens(address to, uint amountWei, uint amountMiniQsp) external onlyOwner validDestination(to) {
+        tokenReward.transferFrom(tokenReward.owner(), to, amountMiniQsp);
+        uint currentBalance = balanceOf[address(this)];
+        balanceOf[address(this)] = currentBalance.add(amountWei);
+        amountRaised = amountRaised.add(amountWei);
+        FundTransfer(msg.sender, amountWei, true);
     }
 
     /**
@@ -153,15 +187,17 @@ contract QuantstampSale is Pausable {
      */
     function ownerSafeWithdrawal() external onlyOwner {
         require(fundingGoalReached);
-        var balanceToSend = this.balance;
+        uint balanceToSend = this.balance;
         beneficiary.transfer(balanceToSend);
         FundTransfer(beneficiary, balanceToSend, false);
     }
 
     /**
-     * The owner can unlock the fund with this function.
+     * The owner can unlock the fund with this function. The use-
+     * case for this is when the owner decides after the deadline
+     * to allow contributors to be refunded their contributions.
      */
-    function ownerUnlockFund() external onlyOwner {
+    function ownerUnlockFund() external afterDeadline onlyOwner {
         fundingGoalReached = false;
     }
 
@@ -177,6 +213,7 @@ contract QuantstampSale is Pausable {
             if (amount > 0) {
                 msg.sender.transfer(amount);
                 FundTransfer(msg.sender, amount, false);
+                refundAmount = refundAmount.add(amount);
             }
         }
     }
@@ -210,7 +247,7 @@ contract QuantstampSale is Pausable {
 
 
     /**
-     * Returns the current time. 
+     * Returns the current time.
      * Useful to abstract calls to "now" for tests.
     */
     function currentTime() returns (uint _currentTime) {
@@ -224,7 +261,7 @@ contract QuantstampSale is Pausable {
      *
      * @param amount    an amount expressed in units of QSP
      */
-    function convertToMiniQsp(uint amount) internal returns (uint) {
+    function convertToMiniQsp(uint amount) internal constant returns (uint) {
         return amount * (10 ** uint(tokenReward.decimals()));
     }
 }

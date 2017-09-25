@@ -58,8 +58,8 @@ The `QuantstampSale.sol` file contains the code for a crowdsale. The default fal
 
 The pre-sale will have a $3 million capacity. The equivalent amount of ETH will be determined within the 24-hour period prior to the pre-sale.
 
-### Initial Coin Offering (ICO)
+### Token Sale
 
-In the near future, this document will be updated with additional information regarding the main ICO for QSP.
+In the near future, this document will be updated with additional information regarding the main token sale for QSP.
 
 Copyright 2017 Quantstamp Technologies Inc. All Rights Reserved.

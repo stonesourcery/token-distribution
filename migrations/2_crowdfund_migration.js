@@ -8,7 +8,6 @@ var Ownable = artifacts.require("./ownership/Ownable.sol");
 var Pausable = artifacts.require("./lifecycle/Pausable.sol");
 var QuantstampToken = artifacts.require("./QuantstampToken.sol");
 var QuantstampSale = artifacts.require("./QuantstampSale.sol");
-var QuantstampICO = artifacts.require("./QuantstampICO.sol");
 
 
 module.exports = function(deployer, network, accounts) {
@@ -32,13 +31,6 @@ module.exports = function(deployer, network, accounts) {
     deployer.link(QuantstampToken, BurnableToken);
     deployer.link(QuantstampToken, SafeMath);
 
-    deployer.deploy(QuantstampToken).then(
-        function() {
-            return deployer.deploy(QuantstampSale, accounts[0], 10, 20, 60, 100, QuantstampToken.address);
-        }).then(function(){
-            return deployer.deploy(QuantstampICO, accounts[0], 10, 20, 60, 50, QuantstampToken.address);
-        });
-
-
-
+    deployer.deploy(QuantstampToken, accounts[1]);
+    deployer.deploy(QuantstampSale, accounts[1], 10, 20, 1, 0, 1, 5000, QuantstampToken.address);
 };
