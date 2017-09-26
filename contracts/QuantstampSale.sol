@@ -262,7 +262,7 @@ contract QuantstampSale is Pausable {
      * Returns the current time.
      * Useful to abstract calls to "now" for tests.
     */
-    function currentTime() returns (uint _currentTime) {
+    function currentTime() constant returns (uint _currentTime) {
         return now;
     }
 

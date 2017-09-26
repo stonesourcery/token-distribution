@@ -1,7 +1,7 @@
 var QuantstampSale = artifacts.require("./QuantstampSale.sol");
 var QuantstampToken = artifacts.require("./QuantstampToken.sol");
 
-var QuantstampSaleMock = artifacts.require('./QuantstampSaleMock.sol');
+var QuantstampSaleMock = artifacts.require('./helpers/QuantstampSaleMock.sol');
 
 
 
@@ -108,28 +108,36 @@ contract('Missed-deadline Crowdsale', function(accounts) {
 
   it("should not allow the purchase of tokens if the deadline is reached", async function() {
       // 0 indicates all crowdsale tokens
-      let currentTime = (await sale.currentTime());
-      let deadline = await sale.deadline();
+      var time = (new Date().getTime() / 1000);
+      var futureTime = time + 130;
 
-      console.log("Now: " + currentTime);
-      console.log("Dea: " + deadline);
+      var amountEther = 2;
+      var amountWei = web3.toWei(amountEther, "ether");
 
-      let val = await timeTravel(86400); //3 days later
-      //await mineBlock();
+      let sale2 = await QuantstampSaleMock.new(accounts[1], 10, 20, 1, time, 2, 5000, token.address);
+      await token.setCrowdsale(sale2.address, 0); // ensures crowdsale has allowance of tokens
 
-      let currentTimeAfter = (await sale.getNow());
-      let deadlineAfter = await sale.deadline();
+      let nowtest = await sale2._now();
 
-      console.log(new Date().getTime());
-      console.log(val);
-      console.log("Now: " + nowAfter);
-      console.log("Dea: " + deadlineAfter);
+      let currentTime = (await sale2.currentTime());
+      //let startTime = (await sale2.)
 
-      let deadlineReachedAfter = await sale.deadlineReached();
-      console.log("Reached? " + deadlineReachedAfter == true);
+      currentTime = currentTime.toNumber();
+      let endTime = await sale2.endTime();
 
-      console.log()
+      await sale2.sendTransaction({from: user2,  value: web3.toWei(amountEther, "ether")});
 
+      await sale2.changeTime(futureTime);
+
+      let afterTime = (await sale2.currentTime());
+
+      try{
+          await sale2.sendTransaction({from: user2,  value: web3.toWei(amountEther, "ether")});
+      }
+      catch (e){
+        return true;
+      }
+      throw new Error("a user sent funds after the deadline");
   });
 
 
