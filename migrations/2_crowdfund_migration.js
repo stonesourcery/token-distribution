@@ -32,7 +32,8 @@ module.exports = function(deployer, network, accounts) {
     deployer.link(QuantstampToken, SafeMath);
 
     var time = new Date().getTime() / 1000;
-    console.log("Time seconds: " + time);
+
+    var monkey = 1234;
 
     deployer.deploy(QuantstampToken, accounts[1]).then(function() {
         return deployer.deploy(QuantstampSale, accounts[1], 10, 20, 1, time, 2, 5000, QuantstampToken.address);

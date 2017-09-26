@@ -44,13 +44,6 @@ contract QuantstampSale is Pausable {
 
     // prevent certain functions from being recursively called
     bool private rentrancy_lock = false;
-    modifier nonReentrant() {
-    require(!rentrancy_lock);
-    rentrancy_lock = true;
-    _;
-    rentrancy_lock = false;
-  }
-
 
     // The token being sold
     QuantstampToken public tokenReward;
@@ -73,6 +66,13 @@ contract QuantstampSale is Pausable {
         require(_to != address(this));
         require(_to != address(tokenReward.owner()));
         _;
+    }
+
+    modifier nonReentrant() {
+        require(!rentrancy_lock);
+        rentrancy_lock = true;
+        _;
+        rentrancy_lock = false;
     }
 
     /**
@@ -166,14 +166,6 @@ contract QuantstampSale is Pausable {
     }
 
     /**
-     * Set the end time of the crowdsale.
-     */
-    function setEnd(uint _end) external onlyOwner {
-        require(now <= _end);
-        endTime = _end;
-    }
-
-    /**
      * The owner can allocate the specified amount of tokens from the
      * crowdsale allowance to the recipient (_to).
      *
@@ -184,12 +176,17 @@ contract QuantstampSale is Pausable {
      * @param amountWei     the amount contributed in wei
      * @param amountMiniQsp the amount of tokens transferred in mini-QSP
      */
-    function ownerAllocateTokens(address to, uint amountWei, uint amountMiniQsp) external onlyOwner nonReentrant validDestination(to) {
-        if(!tokenReward.transferFrom(tokenReward.owner(), to, amountMiniQsp)) revert();
-        uint currentBalance = balanceOf[address(this)];
-        balanceOf[address(this)] = currentBalance.add(amountWei);
+    function ownerAllocateTokens(address _to, uint amountWei, uint amountMiniQsp) external
+            onlyOwner nonReentrant validDestination(to)
+    {
+        if (!tokenReward.transferFrom(tokenReward.owner(), _to, amountMiniQsp)) {
+            revert();
+        }
+        balanceOf[_to] = balanceOf[_to].add(amountWei);
         amountRaised = amountRaised.add(amountWei);
-        FundTransfer(msg.sender, amountWei, true);
+        FundTransfer(_to, amountWei, true);
+        checkFundingGoal();
+        checkFundingCap();
     }
 
     /**
@@ -209,6 +206,8 @@ contract QuantstampSale is Pausable {
      * The owner can unlock the fund with this function. The use-
      * case for this is when the owner decides after the deadline
      * to allow contributors to be refunded their contributions.
+     * Note that the fund would be automatically unlocked if the
+     * minimum funding goal were not reached.
      */
     function ownerUnlockFund() external afterDeadline onlyOwner {
         fundingGoalReached = false;
