@@ -134,7 +134,8 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
      *
      * @param _value    The amount of tokens to burn in mini-QSP
      */
-    function burn(uint256 _value) public onlyWhenTransferEnabled {
+    function burn(uint256 _value) public {
+        require(transferEnabled || msg.sender == owner);
         super.burn(_value);
         Transfer(msg.sender, address(0x0), _value);
     }

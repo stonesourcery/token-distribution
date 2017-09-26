@@ -33,20 +33,41 @@ async function logEthBalances (token, sale, accounts) {
  console.log("")
 }
 
-contract('QuantstampSale Constructor', function(accounts) {
+contract('QuantstampSale setRate', function(accounts) {
   // account[0] points to the owner on the testRPC setup
   var owner = accounts[0];
   var user1 = accounts[1];
   var user2 = accounts[2];
   var user3 = accounts[3];
 
-  it("should have the correct parameters, and calculate the end time correctly", async function() {
+  it("should only be allowed to set values inside the bounds", async function() {
         var sale = await QuantstampSale.deployed();
-        var startTime = (await sale.startTime()).toNumber();
-        var endTime = (await sale.endTime()).toNumber();
+        var LOW = (await sale.LOW_RANGE_RATE()).toNumber();
+        var HIGH = (await sale.HIGH_RANGE_RATE()).toNumber();
 
-        assert.equal(startTime + 120, endTime, "Quantstamp Token");
-        throw new Error("todo");
+        await sale.setRate(LOW);
+        var low_rate = await sale.rate();
+        await sale.setRate(HIGH);
+        var high_rate = await sale.rate();
+        await sale.setRate(LOW + 1);
+        var mid_rate = await sale.rate();
+
+        assert.equal(low_rate, LOW, "the rate should be set to the lower bound");
+        assert.equal(high_rate, HIGH, "the rate should be set to the upper bound");
+        assert.equal(mid_rate, LOW + 1, "the rate should be set to some middle rate");
+
+        try{
+            await sale.setRate(LOW - 1);
+            throw new Error("should not be allowed to set rate below LOW");
+        }
+        catch(e){ }
+
+        try{
+            await sale.setRate(HIGH + 1);
+            throw new Error("should not be allowed to set rate above HIGH");
+        }
+        catch(e){ }
+
     });
 
 });
