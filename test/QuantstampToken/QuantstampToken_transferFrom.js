@@ -4,7 +4,7 @@ var bigInt = require("big-integer");
 var QuantstampToken = artifacts.require("./QuantstampToken.sol");
 var QuantstampSale = artifacts.require("./QuantstampSale.sol");
 
-contract('QuantstampToken.burn', function(accounts) {
+contract('QuantstampToken.transferFrom', function(accounts) {
     // account[0] points to the owner on the testRPC setup
     var owner = accounts[0];
     var admin = accounts[1];
