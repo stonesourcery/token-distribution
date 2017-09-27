@@ -63,13 +63,6 @@ contract QuantstampSale is Pausable {
 
     modifier saleNotClosed()    { require (!saleClosed); _; }
 
-    modifier validDestination(address _to) {
-        require(_to != address(0x0));
-        require(_to != address(this));
-        require(_to != address(tokenReward.owner()));
-        _;
-    }
-
     modifier nonReentrant() {
         require(!rentrancy_lock);
         rentrancy_lock = true;
@@ -179,7 +172,7 @@ contract QuantstampSale is Pausable {
      * @param amountMiniQsp the amount of tokens transferred in mini-QSP
      */
     function ownerAllocateTokens(address _to, uint amountWei, uint amountMiniQsp) external
-            onlyOwner nonReentrant validDestination(_to)
+            onlyOwner nonReentrant
     {
         if (!tokenReward.transferFrom(tokenReward.owner(), _to, amountMiniQsp)) {
             revert();
