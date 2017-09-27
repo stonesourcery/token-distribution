@@ -59,6 +59,8 @@ contract QuantstampSale is Pausable {
     // Modifiers
     modifier beforeDeadline()   { require (currentTime() < endTime); _; }
     modifier afterDeadline()    { require (currentTime() >= endTime); _; }
+    modifier afterStartTime()    { require (currentTime() >= startTime); _; }
+
     modifier saleNotClosed()    { require (!saleClosed); _; }
 
     modifier validDestination(address _to) {
@@ -121,7 +123,7 @@ contract QuantstampSale is Pausable {
      * tokens are transferred to the sender, and that the correct
      * number of tokens are sent according to the current rate.
      */
-    function () payable whenNotPaused beforeDeadline saleNotClosed nonReentrant {
+    function () payable whenNotPaused beforeDeadline afterStartTime saleNotClosed nonReentrant {
         require(msg.value >= minContribution);
 
         // Update the sender's balance of wei contributed and the amount raised

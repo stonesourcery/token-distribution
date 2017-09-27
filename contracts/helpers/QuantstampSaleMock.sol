@@ -34,7 +34,7 @@ contract QuantstampSaleMock is QuantstampSale {
     }
 
     event HitLine(uint key, uint val);
-    function changeTime(uint _newTime) external {
+    function changeTime(uint _newTime) onlyOwner external {
         HitLine(123, _newTime);
         _now = _newTime;
     }
