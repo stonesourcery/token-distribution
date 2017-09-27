@@ -41,9 +41,19 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
         _;
     }
 
+    /**
+     * The listed addresses are not valid recipients of tokens.
+     *
+     * 0x0           - the zero address is not valid
+     * this          - the contract itself should not receive tokens
+     * owner         - the owner has all the initial tokens, but cannot receive any back
+     * adminAddr     - the admin has an allowance of tokens to transfer, but does not receive any
+     * crowdSaleAddr - the crowdsale has an allowance of tokens to transfer, but does not receive any
+     */
     modifier validDestination(address _to) {
         require(_to != address(0x0));
         require(_to != address(this));
+        require(_to != owner);
         require(_to != address(adminAddr));
         require(_to != address(crowdSaleAddr));
         _;
@@ -54,6 +64,12 @@ contract QuantstampToken is StandardToken, BurnableToken, Ownable {
      * to the owner (msg.sender).
      */
     function QuantstampToken(address _admin) {
+        // the owner is a custodian of tokens that can
+        // give an allowance of tokens for crowdsales
+        // or to the admin, but cannot itself transfer
+        // tokens; hence, this requirement
+        require(msg.sender != _admin);
+
         totalSupply = INITIAL_SUPPLY;
         crowdSaleAllowance = CROWDSALE_ALLOWANCE;
         adminAllowance = ADMIN_ALLOWANCE;

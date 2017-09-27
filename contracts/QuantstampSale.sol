@@ -172,12 +172,12 @@ contract QuantstampSale is Pausable {
      * NOTE: be extremely careful to get the amounts correct, which
      * are in units of wei and mini-QSP. Every digit counts.
      *
-     * @param to            the recipient of the tokens
+     * @param _to            the recipient of the tokens
      * @param amountWei     the amount contributed in wei
      * @param amountMiniQsp the amount of tokens transferred in mini-QSP
      */
     function ownerAllocateTokens(address _to, uint amountWei, uint amountMiniQsp) external
-            onlyOwner nonReentrant validDestination(to)
+            onlyOwner nonReentrant validDestination(_to)
     {
         if (!tokenReward.transferFrom(tokenReward.owner(), _to, amountMiniQsp)) {
             revert();
