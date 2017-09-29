@@ -47,7 +47,7 @@ The Quantstamp crowdsale smart contract may be used to sell QSP tokens. To begin
 
 ### Pre-sale
 
-On October 9th, 2017 @ 9PM PST and ending on November 6th (or when sold old, whichever comes first), Quantstamp will have a pre-sale for the QSP token. The conversion rate from QSP to ETH will change during the course of the pre-sale according to the following schedule.
+On October 9th, 2017 @ 9PM PST and ending on November 6th @ 9PM PST (or when sold old, whichever comes first), Quantstamp will have a pre-sale for the QSP token. The conversion rate from QSP to ETH will change during the course of the pre-sale according to the following schedule.
 
 * Week 1: `1 ETH = 10,000 QSP`
 * Week 2: `1 ETH =  9,000 QSP`
