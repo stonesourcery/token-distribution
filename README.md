@@ -45,21 +45,10 @@ The above constants indicate a total supply of 1 billion pre-minted tokens. Of t
 
 The Quantstamp crowdsale smart contract may be used to sell QSP tokens. To begin a crowdsale, the token owner must call the `setCrowdsale()` function of the token contract, passing the address of the crowdsale and the requested allowance of tokens to be sold. Although ownership of the tokens is tied up in the token contract, the crowdsale is given an allowance of tokens from the crowdsale supply and thus is able to transfer tokens to users.
 
-### Pre-sale
+### Token sale
 
-The pre-sale is scheduled for October 10th, 2017 @ 4AM UTC thru November 7th @ 4AM UTC (or when sold out, whichever comes first), Quantstamp will have a pre-sale for the QSP token. The conversion rate from QSP to ETH will change during the course of the pre-sale according to the following schedule.
+To learn more about the token sale, please visit [here](https://medium.com/quantstamp/announcing-proof-of-caring-9fa3209854ff).
 
-* Week 1: `1 ETH = 10,000 QSP`
-* Week 2: `1 ETH =  9,000 QSP`
-* Week 3: `1 ETH =  8,000 QSP`
-* Week 4: `1 ETH =  7,000 QSP`
 
-The `QuantstampSale.sol` file contains the code for a crowdsale. The default fallback function is executed when payment is received. This function will calculate the number of tokens to be distributed to the contributor based on the conversion rate as specified above.
-
-The pre-sale will have a $3 million capacity. The equivalent amount of ETH will be determined within the 24-hour period prior to the pre-sale.
-
-### Token Sale
-
-In the near future, this document will be updated with additional information regarding the main token sale for QSP.
 
 Copyright 2017 Quantstamp Technologies Inc. All Rights Reserved.
